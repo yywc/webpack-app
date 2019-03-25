@@ -36,7 +36,6 @@
     "webpack-merge": "^4.2.1"
   },
   "dependencies": {
-    "uninstall": "0.0.0",
     "vue": "^2.6.10",
     "vue-router": "^3.0.2"
   }
