@@ -1,8 +1,8 @@
-# 前言
+# 1. 前言
 
 自从有了 vue-cli 就没有动手配置过 webpack 的一些配置，除了添加一些 loader 外。一键生成确实很方便，但同时我们也要知道 vue-cli 的作者在背后帮助我们做了哪些事情，这篇文章就是从零开始搭建一个 vue 的开发环境。
 
-# 准备工作
+# 2. 准备工作
 
 webpack 配置前的一些准备工作，先想想我们需要哪些包，采用 stylus 预处理器。
 
@@ -40,9 +40,9 @@ webpack 配置前的一些准备工作，先想想我们需要哪些包，采用
 |-- index.html
 ```
 
-# Vue 相关文件编写
+# 3. Vue 相关文件编写
 
-## index.html
+## 3.1 index.html
 
 首先从最简单的 index.html 开始，通过 vscode 打开，输入 `! + tab`，自动生成一个 html 模板，只需要在里面添加一个 id 为 app 的 div 元素即可。
 
@@ -66,11 +66,11 @@ webpack 配置前的一些准备工作，先想想我们需要哪些包，采用
 </html>
 ```
 
-## src 目录下文件编写
+## 3.2 src 目录下文件编写
 
 这部分也很简单，有过 vue 开发经验的同学都知道，所以就直接列出来好了。
 
-### App.vue 文件
+### 3.2.1 App.vue 文件
 ```
 <template>
   <div id="app">
@@ -88,7 +88,7 @@ export default {
 </script>
 ```
 
-### main.js 文件
+### 3.2.2 main.js 文件
 ```
 import Vue from 'vue';
 import App from './App';
@@ -104,7 +104,7 @@ new Vue({
   render: h => h(App), // 这里用 Runtime Only 版本的 vue
 });
 ```
-### components/HelloWorld.vue 文件
+### 3.2.3 components/HelloWorld.vue 文件
 ```
 <template>
   <div>
@@ -148,7 +148,7 @@ p
   color: red
 </style>
 ```
-### router/index.js 文件
+### 3.2.4 router/index.js 文件
 ```
 import Vue from 'vue';
 import Router from 'vue-router';
@@ -173,7 +173,7 @@ export default new Router({
   ],
 });
 ```
-### assets/index.styl 文件
+### 3.2.5 assets/index.styl 文件
 
 这是一个入口文件，需要引入其他的 stylus 文件给 main.js 统一引入。内容可以随便写，这里只是用来做一个效果展示。
 
@@ -194,7 +194,7 @@ export default new Router({
 
 这样一来 vue 相关的文件已经写好了，如果是 vue-cli 脚手架生成的话，直接 `npm run dev` 就可以跑起来看到效果了。我们要自己启动还需要一些 webpack 部分的编写。
 
-# Webpack 部分
+# 4. Webpack 部分
 
 在此之前呢，我们先试试启动一下 webpack-dev-server。
 
@@ -208,7 +208,7 @@ export default new Router({
 
 紧接着再 `npm run dev` 一下，发现控制台还是会有红色报出，但是打开浏览器已经可以通过 localhost:8080 看到我们之前写的 index.html 页面了。但是问题来了，我们怎么把 vue 相关的显示到这里来呢？，那么就需要 webpack 配置文件上场了。
 
-## webpack.base.conf.js
+## 4.1 webpack.base.conf.js
 
 这里是 webpack 基础配置的文件， webpack.dev.conf.js、webpack.prod.conf.js 来针对开发环境、生产环境做相应的配置，这里我们先只做开发环境的，但还是先这样区分开来。
 
@@ -286,7 +286,7 @@ module.exports = {
     // 控制台会报出 babel-loader@8.0.5 requires a peer of @babel/core@^7.0.0，再安装一下
     > npm i -D @babel/core
 
-## webpack.dev.conf.js
+## 4.2 webpack.dev.conf.js
 
 这里是主要启动 webpack-der-server 的一些配置项了，首先需要从 base 里引入，我们需要一个 webpack-merge 来 merge 一下配置项。
 
@@ -348,11 +348,11 @@ plugins: [
 
 写到这，通过 `npm run dev`，我们的 vue 开发环境已经搭建起来了。
 
-# 补充配置
+# 5. 补充配置
 
 虽然通过之前的配置，环境已经可以跑起来了，但是这样的开发体验并不是很好，下面我们就来进行一些优化。
 
-## 配置热更新
+## 5.1 配置热更新
 
 第一步就是配置热更新，不然我们每次修改代码都得重新 `npm run dev`，实在是太麻烦了。
 
@@ -376,7 +376,7 @@ module.exports = {
 
 保存文件，再次启动 dev，现在就可以热更新 vue 文件的改动了。
 
-## 配置 eslint
+## 5.2 配置 eslint
 
 代码规范是个很重要的事情，通过 eslint 来规范我们的代码结构可以避免很多潜在的错误，我们使用 airbnb 的风格。
 
@@ -448,7 +448,7 @@ settings: {
 
 到这里 eslint 的配置就完成了，如果有个性化的设置，在 .eslintrc.js 文件的 rules 中添加就行。
 
-## 配置报错信息
+## 5.3 配置报错信息
 
 不知道各位对每次 npm run dev 时控制台那么长一串作何感想，反正我觉得很冗杂。vue-cli 中提供了一个 friendly-errors-webpack-plugin 插件，这个插件会对报错信息更为直观友好地提示出来，我们也进行一下配置。
 
@@ -472,7 +472,7 @@ plugins: [
 
 再次跑一下项目，发现控制台是不是精简了很多呢。
 
-## file loader
+## 5.4 file loader
 
 在上面的配置中我们使用了 url-loader 来处理字体和图片，url-loader 有个 limit 配置，当文件大小超过设定值时会采用 file-loader 来进行解析。
 
