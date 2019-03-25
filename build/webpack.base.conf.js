@@ -1,6 +1,8 @@
 const path = require('path');
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
+console.log(process.env.NODE_ENV);
+
 // 路径处理函数
 const resolve = dir => path.join(__dirname, '..', dir);
 
