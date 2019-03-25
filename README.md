@@ -551,7 +551,7 @@ export default {
 
 这个方法是从 /lib/utils/addEntries.js 里引入的，打开 addEntries.js 文件。
 
-![entry](https://github.com/yywc/webpack-vue/tree/development/doc/entry.png)
+![entry](https://github.com/yywc/webpack-vue/blob/development/doc/entry.png)
 
 关键的部分就是在这里了，如果没有设置 entry，会默认去工作目录同级的 src 目录下寻找 index.js 文件。
 
