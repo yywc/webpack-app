@@ -44,7 +44,7 @@ webpack 配置前的一些准备工作，先想想我们需要哪些包，采用
 
 ## index.html
 
-首先从最简单的 index.html 开始，通过 vscode 打开，输入 ! + tab，自动生成一个 html 模板，只需要在里面添加一个 id 为 app 的 div 元素即可。
+首先从最简单的 index.html 开始，通过 vscode 打开，输入 `! + tab`，自动生成一个 html 模板，只需要在里面添加一个 id 为 app 的 div 元素即可。
 
 ```
 <!DOCTYPE html>
@@ -192,7 +192,7 @@ export default new Router({
 
 ```
 
-这样一来 vue 相关的文件已经写好了，如果是 vue-cli 脚手架生成的话，直接 npm run dev 就可以跑起来看到效果了。我们要自己启动还需要一些 webpack 部分的编写。
+这样一来 vue 相关的文件已经写好了，如果是 vue-cli 脚手架生成的话，直接 `npm run dev` 就可以跑起来看到效果了。我们要自己启动还需要一些 webpack 部分的编写。
 
 # Webpack 部分
 
@@ -206,7 +206,7 @@ export default new Router({
 
     > npm i -D webpack-cli
 
-紧接着再 npm run dev 一下，发现控制台还是会有红色报出，但是打开浏览器已经可以通过 localhost:8080 看到我们之前写的 index.html 页面了。但是问题来了，我们怎么把 vue 相关的显示到这里来呢？，那么就需要 webpack 配置文件上场了。
+紧接着再 `npm run dev` 一下，发现控制台还是会有红色报出，但是打开浏览器已经可以通过 localhost:8080 看到我们之前写的 index.html 页面了。但是问题来了，我们怎么把 vue 相关的显示到这里来呢？，那么就需要 webpack 配置文件上场了。
 
 ## webpack.base.conf.js
 
@@ -269,11 +269,11 @@ module.exports = {
       },
       {
         test: /\.(png|svg|jpg|gif)$/,
-        loader: 'url-loader',
+        loader: 'url-loader', // 设置为 url-loader 解析，会将图片解析为 base64 加载，末尾有解释
       },
       {
         test: /\.(woff2?|eot|ttf|otf)(\?.*)?$/,
-        loader: 'url-loader',
+        loader: 'url-loader', // 设置为 url-loader 解析
       },
     ],
   },
@@ -305,7 +305,7 @@ module.exports = merge(baseConfig, {
 });
 ```
 
-现在已经大概写出了个雏形，我们可以试试看 npm run dev 会发生哪些错误，再一步步解决。
+现在已经大概写出了个雏形，我们可以试试看 `npm run dev` 会发生哪些错误，再一步步解决。
 
 首先第一个报出的错误是缺少 vue-template-compiler 包，第二个错误是 vue-loader 没有使用相应的插件，第三个是我们在 router 里异步加载组件时使用了 import 方法动态加载。
 
@@ -329,7 +329,7 @@ plugins: [
       "plugins": ["@babel/plugin-syntax-dynamic-import"]
     }
 
-到此为止，我们再 npm run dev，嗯，没有报错了，打开 localhost:8080，页面上却没有我们想要的效果，原因是此时打开的仍然是项目根目录下的 index.html 文件，没有将我们的 vue 项目挂载到 id 为 app 的 div 元素上。我们还需要一个插件——html-webpack-plugin，这个插件的作用是帮助我们生成 html 文件，并将外部资源挂载到该文件上。
+到此为止，我们再 `npm run dev`，嗯，没有报错了，打开 localhost:8080，页面上却没有我们想要的效果，原因是此时打开的仍然是项目根目录下的 index.html 文件，没有将我们的 vue 项目挂载到 id 为 app 的 div 元素上。我们还需要一个插件——html-webpack-plugin，这个插件的作用是帮助我们生成 html 文件，并将外部资源挂载到该文件上。
 
     > npm i -D html-webpack-plugin
 
@@ -346,7 +346,7 @@ plugins: [
 ],
 ```
 
-写到这，通过 npm run dev，我们的 vue 开发环境已经搭建起来了。
+写到这，通过 `npm run dev`，我们的 vue 开发环境已经搭建起来了。
 
 # 补充配置
 
@@ -354,7 +354,7 @@ plugins: [
 
 ## 配置热更新
 
-第一步就是配置热更新，不然我们每次修改代码都得重新 npm run dev，实在是太麻烦了。
+第一步就是配置热更新，不然我们每次修改代码都得重新 `npm run dev`，实在是太麻烦了。
 
 打开 webpack.dev.conf.js 文件，新增属性，devServer。
 
@@ -450,7 +450,7 @@ settings: {
 
 ## 配置报错信息
 
-不知道各位对每次 npm run dev 时控制台那么长一串作何感想，反正我觉得很冗杂。vue-cli 中提供了一个 friendly-errors-webpack-plugin 插件，这个插件会对报错信息更为直观友好地提示出来。我们也进行一下配置。
+不知道各位对每次 npm run dev 时控制台那么长一串作何感想，反正我觉得很冗杂。vue-cli 中提供了一个 friendly-errors-webpack-plugin 插件，这个插件会对报错信息更为直观友好地提示出来，我们也进行一下配置。
 
     > npm i -D friendly-errors-webpack-plugin
 
@@ -471,3 +471,88 @@ plugins: [
 ```
 
 再次跑一下项目，发现控制台是不是精简了很多呢。
+
+## file loader
+
+在上面的配置中我们使用了 url-loader 来处理字体和图片，url-loader 有个 limit 配置，当文件大小超过设定值时会采用 file-loader 来进行解析。
+
+首先我们下载一张 100kb 以上的图片到 assets/images 下，然后打开 HelloWorld.vue 文件，做出如下改变。
+
+```
+<template>
+  <div>
++    <img :src="bg"
++         alt="bg">
+  </div>
+</template>
+
+<script>
++ import bg from '@/assets/images/bg.jpg';
+
+export default {
+  data() {
+    return {
++      bg,
+    };
+  },
+};
+</script>
+```
+
+再到 webpack.base.conf.js 文件的图片 loader 中添加一个属性: options。
+
+```
+{
+  test: /\.(png|svg|jpg|gif)$/,
+  loader: 'url-loader',
++  options: {
++    limit: 102400, // 100kb
++  }
+},
+```
+
+运行 `npm run dev` 试试，会发现报错了:
+
+![error](https://github.com/yywc/webpack-vue/tree/development/doc/error.png)
+
+原因就是我们下载的 bg.jpg 图片大小超过了 100kb，不能使用 url-loader 解析为 base64 了，所以会采用 file-loader 解析，我们需要补充安装 file-loader 依赖——`npm i -D file-loader`，安装完后再 `npm run dev` 看看。
+
+没有报错，打开浏览开发者调试工具，看看图片如下:
+
+![image](https://github.com/yywc/webpack-vue/tree/development/doc/image.png)
+
+第一张是 base64，第二张是静态资源，第三张就是我们通过 file-loader 解析的图片文件了。
+
+# webpack-dev-server 简单解读
+
+有些同学可能会有点疑问，webpack 配置不是四剑客——entry、output、module、plugins 吗？我们配置的开发环境怎么没有 output 的配置。这里不仅可以省略掉 output，连 entry 也可以省略。？？？，下面就简单分析一下。
+
+首先我们将 src/main.js 修改文件名为 index.js，然后注释掉 webpack-dev-server 中 entry 属性，`npm run dev` 发现启动文件也没有报错，非常正常，其实这里可以在 webpack-dev-server 源码中找到答案。
+
+在此之前，简单介绍一下 webpack-dev-server 的工作原理：
+
+> webpack-dev-server 通过 express 启动一个本地服务器，与客户端通过 websocket 进行长连接，所以可以通过配置 hot 属性来实现原始文件改变，webpack-dev-server 实时编译刷新。
+
+这里有几点需要注意：
++ webpack-dev-server 是对资源文件进行编译加载，所以不会对 /index.html 的改变做出实时响应；
++ webpack-dev-server 默认会在当前工作目录(也就是 package.json 的目录)下找 src/index.js 文件作为 entry 的入口；
++ webpack-dev-server 生成的文件在内存中，所以看不到有输出，生成路径由 contentBase 指定，默认为当前工作目录；
++ webpack-dev-server 会在 contentBase 目录下寻找 index.html 作为首页；
+
+> 当我们在 devServer 中指定 contentBase: './dist' 时，那么 webpack-dev-server 就会去 dist 目录下寻找 index.html 以及其他资源文件了。
+
+> 我们可以 `npm run dev` 看看效果，跑起来后大部分都正常，除了找不到我们通过 /static/avatar.jpg 引入的图片，这样也可以解释，当未设置 contentBase 时，默认是根目录，而我们的 static 目录恰巧也是根目录，所以一切都是正常的。
+
+> 如果要解决这个问题，我们通过 copy-webpack-plugin 插件将资源拷贝过来，这里暂时就不做演示了，配置生产环境的时候会介绍，把这里这些操作先还原。
+
+不设置 entry 也可以正常运行的原因：在 webpack-dev-server 源码中找到 bin 目录下的 webpack-dev-server.js 文件，找到 startDevServer 方法，这里是主要启动服务，可以看到调用了一个 addEntries 方法。
+
+![start_dev_server](https://github.com/yywc/webpack-vue/tree/development/doc/start_dev_server.png)
+
+这个方法是从 /lib/utils/addEntries.js 里引入的，打开 addEntries.js 文件。
+
+![entry](https://github.com/yywc/webpack-vue/tree/development/doc/entry.png)
+
+关键的部分就是在这里了，如果没有设置 entry，会默认去工作目录同级的 src 目录下寻找 index.js 文件。
+
+至于 output 为什么也可以不用设置那就是 webpack 默认的输出路径了。通过测试，在 webpack 打包时不设置 output，会自动打包到根目录下生成 /dist/ 文件。

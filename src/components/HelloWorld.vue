@@ -8,17 +8,21 @@
     <img src="/static/avatar.jpg"
          alt="icon"
          style="display: block;width: 128px;">
+    <img :src="bg"
+         alt="bg">
   </div>
 </template>
 
 <script>
 import icon from '@/assets/images/icon.jpg';
+import bg from '@/assets/images/bg.jpg';
 
 export default {
   name: 'HelloWorld',
   data() {
     return {
       icon,
+      bg,
       msg: '',
     };
   },

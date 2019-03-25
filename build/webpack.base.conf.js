@@ -47,6 +47,9 @@ module.exports = {
       {
         test: /\.(png|svg|jpg|gif)$/,
         loader: 'url-loader',
+        options: {
+          limit: 102400
+        }
       },
       {
         test: /\.(woff2?|eot|ttf|otf)(\?.*)?$/,
