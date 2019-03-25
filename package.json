@@ -1,13 +1,14 @@
 {
-  "name": "test",
+  "name": "webpack-vue",
+  "private": true,
   "version": "1.0.0",
-  "description": "",
+  "description": "webpack set vue environment",
   "main": "index.js",
   "scripts": {
     "+": "echo \"Error: no test specified\" && exit 1",
     "dev": "webpack-dev-server --progress --config build/webpack.dev.conf.js"
   },
-  "author": "",
+  "author": "yywc",
   "license": "ISC",
   "devDependencies": {
     "@babel/core": "^7.4.0",
