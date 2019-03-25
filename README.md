@@ -523,7 +523,7 @@ export default {
 
 第一张是 base64，第二张是静态资源，第三张就是我们通过 file-loader 解析的图片文件了。
 
-# webpack-dev-server 简单解读
+# 6. webpack-dev-server 简单解读
 
 有些同学可能会有点疑问，webpack 配置不是四剑客——entry、output、module、plugins 吗？我们配置的开发环境怎么没有 output 的配置。这里不仅可以省略掉 output，连 entry 也可以省略。？？？，下面就简单分析一下。
 
