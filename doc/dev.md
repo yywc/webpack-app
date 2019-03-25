@@ -513,13 +513,13 @@ export default {
 
 运行 `npm run dev` 试试，会发现报错了:
 
-![error](https://github.com/yywc/webpack-vue/blob/development/doc/error.png)
+![error](https://github.com/yywc/webpack-vue/blob/master/doc/development/error.png)
 
 原因就是我们下载的 bg.jpg 图片大小超过了 100kb，不能使用 url-loader 解析为 base64 了，所以会采用 file-loader 解析，我们需要补充安装 file-loader 依赖——`npm i -D file-loader`，安装完后再 `npm run dev` 看看。
 
 没有报错，打开浏览开发者调试工具，看看图片如下:
 
-![image](https://github.com/yywc/webpack-vue/blob/development/doc/image.png)
+![image](https://github.com/yywc/webpack-vue/blob/master/doc/development/image.png)
 
 第一张是 base64，第二张是静态资源，第三张就是我们通过 file-loader 解析的图片文件了。
 
@@ -547,11 +547,11 @@ export default {
 
 不设置 entry 也可以正常运行的原因：在 webpack-dev-server 源码中找到 bin 目录下的 webpack-dev-server.js 文件，找到 startDevServer 方法，这里是主要启动服务，可以看到调用了一个 addEntries 方法。
 
-![start_dev_server](https://github.com/yywc/webpack-vue/blob/development/doc/start_dev_server.png)
+![start_dev_server](https://github.com/yywc/webpack-vue/blob/master/doc/development/start_dev_server.png)
 
 这个方法是从 /lib/utils/addEntries.js 里引入的，打开 addEntries.js 文件。
 
-![entry](https://github.com/yywc/webpack-vue/blob/development/doc/entry.png)
+![entry](https://github.com/yywc/webpack-vue/blob/master/doc/development/entry.png)
 
 关键的部分就是在这里了，如果没有设置 entry，会默认去工作目录同级的 src 目录下寻找 index.js 文件。
 
