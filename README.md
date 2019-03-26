@@ -1,5 +1,6 @@
-# 从零开始配置以及学习 webpack
+# 前言
 
-## webpack 开发环境
++ npm run build
++ npm run start
 
-## webpack 生产环境
+可以打包文件，然后启动。
