@@ -188,7 +188,7 @@ export default new Router({
 .hello
   padding: 10px
   font-size: 24px
-  border: 1px solid;
+  border: 1px solid
 
 ```
 
@@ -223,7 +223,7 @@ export default new Router({
 }
 ```
 
-那么现在开始编写 webpack.base.conf.js 文件。在 base 文件中，我们只需要配置 webpack 的入口，解析以及模块就够了。像插件以及其他一些配置项根据环境不同，配置也就不同，所以就不用再 base 文件中体现了。
+那么现在开始编写 webpack.base.conf.js 文件。在 base 文件中，我们只需要配置 webpack 的入口，解析以及模块就够了。像插件以及其他一些配置项根据环境不同，配置也就不同，所以就不用在 base 文件中体现了。
 
 webpack.base.conf.js 文件
 ```
