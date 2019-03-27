@@ -11,8 +11,8 @@ const baseWebpackConfig = require('./webpack.base.conf');
 module.exports = merge(baseWebpackConfig, {
   mode: 'production',
   output: {
-    filename: 'js/[name].[chunkhash].js',
     path: path.join(__dirname, '../dist'),
+    filename: 'js/[name].[chunkhash].js',
   },
   plugins: [
     new HtmlWebpackPlugin({
