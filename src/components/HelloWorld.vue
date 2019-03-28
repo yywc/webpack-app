@@ -40,6 +40,10 @@ export default {
 </script>
 
 <style lang="stylus" scoped>
+@import '~@/assets/stylus/common.styl';
+
 p
   color: red
+  transition: all
+  background: url('~@/assets/images/icon.jpg')
 </style>

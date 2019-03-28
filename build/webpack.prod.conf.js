@@ -9,12 +9,13 @@ const OptimizeCSSAssetsPlugin = require("optimize-css-assets-webpack-plugin");
 const baseWebpackConfig = require('./webpack.base.conf');
 
 module.exports = merge(baseWebpackConfig, {
-  mode: 'production',
+  devtool: 'source-map',
   output: {
     path: path.join(__dirname, '../dist'),
     filename: 'js/[name].[chunkhash].js',
   },
   plugins: [
+    new VueLoaderPlugin(),
     new HtmlWebpackPlugin({
       template: 'index.html', // 本地模板的位置
       minify: {
@@ -27,7 +28,6 @@ module.exports = merge(baseWebpackConfig, {
       { from: 'static', to: 'static' },
     ]),
     new CleanWebpackPlugin(),
-    new VueLoaderPlugin(),
     new MiniCssExtractPlugin({
       filename: 'css/[name].[contenthash].css',
     }),

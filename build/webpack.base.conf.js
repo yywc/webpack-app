@@ -1,12 +1,23 @@
 const path = require('path');
-const MiniCssExtractPlugin = require("mini-css-extract-plugin");
-
-console.log(process.env.NODE_ENV);
+const { cssLoaders, prod } = require('./utils');
 
 // 路径处理函数
 const resolve = dir => path.join(__dirname, '..', dir);
 
+// eslint 校验
+const eslintRule = {
+  test: /\.(js|vue)$/,
+  loader: 'eslint-loader',
+  enforce: 'pre',
+  include: [resolve('src')],
+  options: {
+    formatter: require('eslint-friendly-formatter'),
+    emitWarning: true,
+  }
+}
+
 module.exports = {
+  mode: prod ? 'production' : 'development',
   entry: {
     app: './src/main.js'
   },
@@ -17,16 +28,22 @@ module.exports = {
     },
   },
   module: {
-    /**
-    * 我们在 vue 项目中需要 loader 来处理的有
-    * vue 文件、js 文件、css/stylus 文件、图片/字体
-    * 所以 rules 的编写就是如下所示
-    */
     rules: [
+      ...(prod ? [eslintRule] : []), // 生产环境不需要 eslint
+      ...cssLoaders(),
       {
         test: /\.vue$/,
         loader: 'vue-loader',
         include: [resolve('src')],
+        options: {
+          cacheBusting: true,
+          transformToRequire: {
+            video: ['src', 'poster'],
+            source: 'src',
+            img: 'src',
+            image: 'xlink:href'
+          }
+        },
       },
       {
         test: /\.js$/,
@@ -34,31 +51,10 @@ module.exports = {
         include: [resolve('src')],
       },
       {
-        test: /\.css$/,
-        use: [
-          'vue-style-loader',
-          {
-            loader: MiniCssExtractPlugin.loader,
-          },
-          'css-loader',
-        ],
-      },
-      {
-        test: /\.styl(us)?$/,
-        use: [
-          'vue-style-loader',
-          {
-            loader: MiniCssExtractPlugin.loader,
-          },
-          'css-loader',
-          'stylus-loader',
-        ],
-      },
-      {
         test: /\.(png|svg|jpg|gif)$/,
         loader: 'url-loader',
         options: {
-          limit: 10240,
+          limit: 102400,
           name: 'images/[name].[hash:7].[ext]',
         }
       },
@@ -66,7 +62,7 @@ module.exports = {
         test: /\.(woff2?|eot|ttf|otf)(\?.*)?$/,
         loader: 'url-loader',
         options: {
-          limit: 10240,
+          limit: 102400,
           name: 'fonts/[name].[hash:7].[ext]',
         }
       },
