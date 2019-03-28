@@ -20,6 +20,23 @@
 
 > "build": "webpack --progress --config build/webpack.prod.conf.js"
 
+新增 @babel/preset-env 包，它可以根据配置的目标浏览器或者运行环境来自动将 ES2015+ 的代码转换为 es5。
+
+调整 .babelrc 文件：
+
+```
++ "presets": [
++   [
++     "@babel/preset-env",
++     {
++       "targets": {
++         "esmodules": true
++       }
++     }
++   ]
++ ],
+```
+
 # 3. webpack.base.conf.js
 
 针对开发环境，我们就不需要 eslint 来校验了，于是可以删除掉对 js、vue 文件的校验。
@@ -218,7 +235,7 @@ plugin: [
 
 再执行打包命令，之后启动服务，我们缺失的图片回来了！而且整个项目也正常的跑起来了。
 
-# 6. css 提取与压缩
+# 7. css 提取与压缩
 
 上面的操作并没有涉及到 css 部分，如果我们需要将 css 代码提取出来，那么就需要用到 mini-css-extract-plugin (webpack4以下使用 extract-text-webpack-plugin) 与 optimize-css-assets-webpack-plugin 了。
 
