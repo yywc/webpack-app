@@ -24,7 +24,7 @@
 
 调整 .babelrc 文件：
 
-```
+```json
 + "presets": [
 +   [
 +     "@babel/preset-env",
@@ -41,7 +41,7 @@
 
 针对开发环境，我们就不需要 eslint 来校验了，于是可以删除掉对 js、vue 文件的校验。
 
-```
+```js
 - {
 -   test: /\.(js|vue)$/,
 -   loader: 'eslint-loader',
@@ -52,7 +52,7 @@
 
 同时对图片字体等文件的解析也做一个限制，超过 10KB 则使用 file-loader。
 
-```
+```js
 {
   test: /\.(png|svg|jpg|gif)$/,
   loader: 'url-loader',
@@ -75,7 +75,7 @@
 
 于是最终文件内容如下：
 
-```
+```js
 const path = require('path');
 
 // 路径处理函数
@@ -141,7 +141,7 @@ module.exports = {
 
 与开发环境差不多，我们依旧需要 merge 基本配置，html-webpack-plugin 与 vue-loader 的 plugin，同时指定一下输出目录。
 
-```
+```js
 // 引入基本的配置与插件
 const path = require('path');
 const merge = require('webpack-merge');
@@ -176,7 +176,7 @@ module.exports = merge(baseWebpackConfig, {
 
 在文件根目录创建 server.js，然后安装 koa、koa-static 依赖，`npm i -D koa koa-static`。
 
-```
+```js
 const Koa = require('koa');
 const static = require('koa-static');
 
@@ -221,7 +221,7 @@ app.listen(3030, (err) => {
 
 webpack.prod.conf.js
 
-```
+```js
 + const CopyPlugin = require('copy-webpack-plugin');
 + const CleanWebpackPlugin = require('clean-webpack-plugin'); // 会帮我们删除 dist 目录下所有文件，打包重新生成
 
@@ -235,13 +235,13 @@ plugin: [
 
 再执行打包命令，之后启动服务，我们缺失的图片回来了！而且整个项目也正常的跑起来了。
 
-# 7. css 提取与压缩
+# 6. css 提取与压缩
 
 上面的操作并没有涉及到 css 部分，如果我们需要将 css 代码提取出来，那么就需要用到 mini-css-extract-plugin (webpack4以下使用 extract-text-webpack-plugin) 与 optimize-css-assets-webpack-plugin 了。
 
 还是先安装这两个插件 `npm i -D mini-css-extract-plugin optimize-css-assets-webpack-plugin`，在 **webpack.prod.conf.js** 文件中注册插件。
 
-```
+```js
 + const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 + const OptimizeCSSAssetsPlugin = require("optimize-css-assets-webpack-plugin");
 
@@ -254,7 +254,7 @@ plugin: [
 
 **webpack.base.conf.js** 文件也需要修改一下，在 css stylus loader 里添加 MiniCssExtractPlugin.loader
 
-```
+```js
 + const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
 {
