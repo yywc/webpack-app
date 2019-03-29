@@ -9,15 +9,18 @@ webpack 配置前的一些准备工作，先想想我们需要哪些包，采用
 + vue、vue-router
 + webpack、webpack-dev-server、css-loader、stylus-loader、stylus
 
-```
-> npm init // 初始化 npm 项目
-> npm i -D webpack webpack-dev-server css-loader stylus-loader stylus // 安装开发环境依赖
-> npm i vue vue-router --save // 安装生产环境依赖
+```shell
+# 初始化 npm 项目
+npm init
+# 安装开发环境依赖
+npm i -D webpack webpack-dev-server css-loader stylus-loader stylus
+# 安装生产环境依赖
+npm i vue vue-router --save
 ```
 
 依照下面目录结构创建文件夹及相关文件
 
-```
+```shell
 |-- build
     |-- webpack.base.conf.js
     |-- webpack.dev.conf.js
@@ -46,7 +49,7 @@ webpack 配置前的一些准备工作，先想想我们需要哪些包，采用
 
 首先从最简单的 index.html 开始，通过 vscode 打开，输入 `! + tab`，自动生成一个 html 模板，只需要在里面添加一个 id 为 app 的 div 元素即可。
 
-```
+```html
 <!DOCTYPE html>
 <html lang="en">
 
@@ -71,7 +74,8 @@ webpack 配置前的一些准备工作，先想想我们需要哪些包，采用
 这部分也很简单，有过 vue 开发经验的同学都知道，所以就直接列出来好了。
 
 ### 3.2.1 App.vue 文件
-```
+
+```html
 <template>
   <div id="app">
     <router-view />
@@ -89,7 +93,8 @@ export default {
 ```
 
 ### 3.2.2 main.js 文件
-```
+
+```js
 import Vue from 'vue';
 import App from './App';
 import router from './router';
@@ -104,8 +109,10 @@ new Vue({
   render: h => h(App), // 这里用 Runtime Only 版本的 vue
 });
 ```
+
 ### 3.2.3 components/HelloWorld.vue 文件
-```
+
+```html
 <template>
   <div>
     <p>{{ msg }}</p>
@@ -148,8 +155,10 @@ p
   color: red
 </style>
 ```
+
 ### 3.2.4 router/index.js 文件
-```
+
+```js
 import Vue from 'vue';
 import Router from 'vue-router';
 
@@ -173,11 +182,12 @@ export default new Router({
   ],
 });
 ```
+
 ### 3.2.5 assets/index.styl 文件
 
 这是一个入口文件，需要引入其他的 stylus 文件给 main.js 统一引入。内容可以随便写，这里只是用来做一个效果展示。
 
-```
+```stylus
 @import "./icon.styl";
 
 *
@@ -189,7 +199,6 @@ export default new Router({
   padding: 10px
   font-size: 24px
   border: 1px solid
-
 ```
 
 这样一来 vue 相关的文件已经写好了，如果是 vue-cli 脚手架生成的话，直接 `npm run dev` 就可以跑起来看到效果了。我们要自己启动还需要一些 webpack 部分的编写。
@@ -214,7 +223,7 @@ export default new Router({
 
 在编写之前，我们先完善一下 package.json 中的命令，之前我们写了一个 "dev": "webpack-dev-server"，现在改为如下：
 
-```
+```json
 "scripts": {
   ... // 其他的命令
 -  "dev": "webpack-dev-server",
@@ -226,7 +235,8 @@ export default new Router({
 那么现在开始编写 webpack.base.conf.js 文件。在 base 文件中，我们只需要配置 webpack 的入口，解析以及模块就够了。像插件以及其他一些配置项根据环境不同，配置也就不同，所以就不用在 base 文件中体现了。
 
 webpack.base.conf.js 文件
-```
+
+```js
 const path = require('path');
 
 // 路径处理函数
@@ -282,20 +292,24 @@ module.exports = {
 
 写完之后，我们也要一个个来安装依赖。安装 babel-loader 的时候需要注意控制台，会提示安装一个 @babel/core 依赖。
 
-    > npm i -D vue-loader babel-loader vue-style-loader url-loader
-    // 控制台会报出 babel-loader@8.0.5 requires a peer of @babel/core@^7.0.0，再安装一下
-    > npm i -D @babel/core
+```shell
+npm i -D vue-loader babel-loader vue-style-loader url-loader
+# 控制台会报出 babel-loader@8.0.5 requires a peer of @babel/core@^7.0.0，再安装一下
+npm i -D @babel/core
+```
 
 ## 4.2 webpack.dev.conf.js
 
 这里是主要启动 webpack-der-server 的一些配置项了，首先需要从 base 里引入，我们需要一个 webpack-merge 来 merge 一下配置项。
 
-    // 安装
-    > npm i -D webpack-merge
+```shell
+# 安装
+npm i -D webpack-merge
+```
 
 webpack.dev.conf.js 文件
 
-```
+```js
 const merge = require('webpack-merge');
 const baseConfig = require('./webpack.base.conf');
 
@@ -309,13 +323,17 @@ module.exports = merge(baseConfig, {
 
 首先第一个报出的错误是缺少 vue-template-compiler 包，第二个错误是 vue-loader 没有使用相应的插件，第三个是我们在 router 里异步加载组件时使用了 import 方法动态加载。
 
-    > npm i -D vue-template-compiler // 注意 vue-template-compiler 的版本号要与 vue 一致
-    > npm i -D @babel/plugin-syntax-dynamic-import // 解决动态 import 的错误
+```shell
+# 注意 vue-template-compiler 的版本号要与 vue 一致
+npm i -D vue-template-compiler
+# 解决动态 import 的错误
+npm i -D @babel/plugin-syntax-dynamic-import
+```
 
 vue-loader 使用的时候，需要在 plugin 中添加一个插件。
 
 webpack.dev.conf.js 文件修改
-```
+```js
 const VueLoaderPlugin = require('vue-loader/lib/plugin');
 
 plugins: [
@@ -325,17 +343,21 @@ plugins: [
 
 同时在项目根目录下新建 .babelrc，内容如下：
 
-    {
-      "plugins": ["@babel/plugin-syntax-dynamic-import"]
-    }
+```json
+{
+  "plugins": ["@babel/plugin-syntax-dynamic-import"]
+}
+```
 
 到此为止，我们再 `npm run dev`，嗯，没有报错了，打开 localhost:8080，页面上却没有我们想要的效果，原因是此时打开的仍然是项目根目录下的 index.html 文件，没有将我们的 vue 项目挂载到 id 为 app 的 div 元素上。我们还需要一个插件——html-webpack-plugin，这个插件的作用是帮助我们生成 html 文件，并将外部资源挂载到该文件上。
 
-    > npm i -D html-webpack-plugin
+```shell
+npm i -D html-webpack-plugin
+```
 
 在 webpack.dev.conf.js 文件中将该插件注入。
 
-```
+```js
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 plugins: [
@@ -358,7 +380,7 @@ plugins: [
 
 打开 webpack.dev.conf.js 文件，新增属性，devServer。
 
-```
+```js
 const webpack = require('webpack');
 
 module.exports = {
@@ -384,11 +406,13 @@ module.exports = {
 
 在对 vue 模板进行 eslint 校验时，需要 eslint-plugin-vue 依赖，于是总的命令如下：
 
-    > npm i -D eslint babel-eslint eslint-config-airbnb-base eslint-plugin-import eslint-plugin-vue
+```shell
+npm i -D eslint babel-eslint eslint-config-airbnb-base eslint-plugin-import eslint-plugin-vue
+```
 
 在根目录新建 .eslintrc.js 文件，打开。
 
-```
+```js
 module.exports = {
   root: true, // 设置为根目录，不会再向上寻找 eslint 配置文件
   parserOptions: {
@@ -409,14 +433,13 @@ module.exports = {
 };
 ```
 
-但是现在我们去文件中，并没有发现 eslint 生效，原因是还缺少一个关键依赖：eslint-loader，有了这个才能在 vue、js 文件中启动 eslint 的校验。
-
-    > npm i -D eslint-loader
+但是现在我们去文件中，并没有发现 eslint 生效，原因是还缺少一个关键依赖：eslint-loader，有了这个才能在 vue、js 文件中启动 eslint 的校验， `npm i -D eslint-loader`。
 
 打开 webpack.base.conf.js 文件，在 rules 中添加 eslint 的 loader。
 
 webpack.base.conf.js
-```
+
+```js
 // rules 里添加
 {
   test: /\.(js|vue)$/,
@@ -430,7 +453,7 @@ webpack.base.conf.js
 
 这里还有两个小问题，webpack 相关文件不需要 eslint 校验，可以通过 .eslintignore 文件忽略；另一个就是使用 @ 符号指向 src 引入组件时 eslint 会报 Unable to resolve path to module，就这两个问题我们来解决一下。
 
-```
+```text
 // 1. 项目根目录新建 .eslintignore 文件，里面内容如下
 // 忽略 eslint 对根目录 build 下的所有文件以及根目录下的 js 文件的校验
 /build/
@@ -450,13 +473,11 @@ settings: {
 
 ## 5.3 配置报错信息
 
-不知道各位对每次 npm run dev 时控制台那么长一串作何感想，反正我觉得很冗杂。vue-cli 中提供了一个 friendly-errors-webpack-plugin 插件，这个插件会对报错信息更为直观友好地提示出来，我们也进行一下配置。
-
-    > npm i -D friendly-errors-webpack-plugin
+不知道各位对每次 npm run dev 时控制台那么长一串作何感想，反正我觉得很冗杂。vue-cli 中提供了一个 friendly-errors-webpack-plugin 插件，这个插件会对报错信息更为直观友好地提示出来，我们也进行一下配置， `npm i -D friendly-errors-webpack-plugin`。
 
 使用方式很简单，就在 webpack.dev.conf.js 文件中引入，在 plugins 中加入即可。
 
-```
+```js
 const FriendlyErrorsPlugin = require('friendly-errors-webpack-plugin');
 
 devServer: {
@@ -478,7 +499,7 @@ plugins: [
 
 首先我们下载一张 100kb 以上的图片到 assets/images 下，然后打开 HelloWorld.vue 文件，做出如下改变。
 
-```
+```html
 <template>
   <div>
 +    <img :src="bg"
@@ -501,7 +522,7 @@ export default {
 
 再到 webpack.base.conf.js 文件的图片 loader 中添加一个属性: options。
 
-```
+```js
 {
   test: /\.(png|svg|jpg|gif)$/,
   loader: 'url-loader',
