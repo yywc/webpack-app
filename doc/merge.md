@@ -2,11 +2,11 @@
 
 经过前两次分别对开发环境以及生产环境的配置，我们也能看出来有很多部分都是相同的，除了一些环境配置，这篇主要是进行一些合并操作。
 
-## 1. git merge
+## git merge
 
 切换分支到 master，然后 git merge production，冲突都保留。然后一个个来进行调整。
 
-### 1.1 package.json
+### package.json
 
 既然需要合并，那么一些配置肯定也是会公用，通过在 package.json 中设置 node 的环境变量来区分打包环境。安装 cross-env 依赖，这个可以解决 *nix 和 windows 下设置的差异。
 设置 engines 来说明 node 和 npm 的版本，设置 browserslist 来给一些插件提供浏览器环境信息。
@@ -32,7 +32,7 @@
 
 start 是用来启动生产环境打包后的静态资源。
 
-### 1.2 webpack 公用部分
+### webpack 公用部分
 
 从之前的两次配置中也能看出来，在 webpack.base.conf.js 文件中主要是 css 相关的 loader 和 eslint 校验需要通过环境来区分。
 
@@ -161,5 +161,3 @@ module.exports = {
   },
 };
 ```
-
-## 2. 补充优化
