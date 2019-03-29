@@ -9,7 +9,6 @@ const OptimizeCSSAssetsPlugin = require("optimize-css-assets-webpack-plugin");
 const baseWebpackConfig = require('./webpack.base.conf');
 
 module.exports = merge(baseWebpackConfig, {
-  devtool: 'source-map',
   output: {
     path: path.join(__dirname, '../dist'),
     filename: 'js/[name].[chunkhash].js',

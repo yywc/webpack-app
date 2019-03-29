@@ -6,7 +6,6 @@ const FriendlyErrorsPlugin = require('friendly-errors-webpack-plugin');
 const baseConfig = require('./webpack.base.conf');
 
 module.exports = merge(baseConfig, {
-  devtool: 'cheap-module-eval-source-map',
   devServer: {
     hot: true, // 热更新
     quiet: true, // 关闭 webpack-dev-server 的提示，用 friendly-error-plugin

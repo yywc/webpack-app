@@ -1,25 +1,21 @@
-const MiniCssExtractPlugin = require("mini-css-extract-plugin");
-
-const prod = process.env.NODE_ENV === 'production';
+const CssExtractLoader = require("mini-css-extract-plugin").loader;
+const config = require('./config');
 
 const getCssLoaders = () => {
-
   const vueStyleLoader = {
     loader: 'vue-style-loader',
   };
-
   const generateLoaders = (loaderName) => {
-    const loaders = ['css-loader', 'postcss-loader'];
-
+    const baseLoaders = ['css-loader', 'postcss-loader'];
     if (loaderName) {
-      loaders.push({
+      baseLoaders.push({
         loader: `${loaderName}-loader`
       });
     }
-    if (prod) {
-      loaders.unshift(MiniCssExtractPlugin.loader);
+    if (config.prod) {
+      baseLoaders.unshift(CssExtractLoader);
     }
-    return [vueStyleLoader, ...loaders];
+    return [vueStyleLoader, ...baseLoaders];
   };
   return {
     css: generateLoaders(),
@@ -27,17 +23,16 @@ const getCssLoaders = () => {
   }
 };
 
-exports.cssLoaders = () => {
-  const loaderArray = [];
-  const loaders = getCssLoaders();
-  for (const loaderName in loaders) {
-    const loader = loaders[loaderName];
-    loaderArray.push({
-      test: new RegExp(`\\.${loaderName}$`),
-      use: loader,
-    });
-  }
-  return loaderArray;
-};
+const loaderArray = [];
 
-exports.prod = prod;
+const loaders = getCssLoaders();
+
+for (const loaderName in loaders) {
+  const loader = loaders[loaderName];
+  loaderArray.push({
+    test: new RegExp(`\\.${loaderName}$`),
+    use: loader,
+  });
+}
+
+module.exports = loaderArray;
