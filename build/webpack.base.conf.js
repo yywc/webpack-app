@@ -1,5 +1,17 @@
-const cssLoaders = require('./utils');
+const threadLoader = require('thread-loader');
+const VueLoaderPlugin = require('vue-loader/lib/plugin');
 const config = require('./config');
+const { cssLoaders } = require('./utils');
+
+threadLoader.warmup({
+  // pool options, like passed to loader options
+  // must match loader options to boot the correct pool
+}, [
+    // modules to load
+    // can be any module, i. e.
+    'babel-loader',
+    'vue-loader',
+  ]);
 
 module.exports = {
   entry: {
@@ -16,24 +28,28 @@ module.exports = {
   module: {
     rules: [
       ...config.eslint,
-      ...cssLoaders,
+      ...cssLoaders(),
       {
         test: /\.vue$/,
-        loader: 'vue-loader',
+        use: [
+          'thread-loader',
+          {
+            loader: 'vue-loader',
+            options: {
+              cacheBusting: true,
+              transformToRequire: {
+                video: ['src', 'poster'],
+                source: 'src',
+                img: 'src',
+                image: 'xlink:href'
+              }
+            },
+          }],
         include: [config.resolve('src')],
-        options: {
-          cacheBusting: true,
-          transformToRequire: {
-            video: ['src', 'poster'],
-            source: 'src',
-            img: 'src',
-            image: 'xlink:href'
-          }
-        },
       },
       {
         test: /\.js$/,
-        loader: 'babel-loader',
+        use: ['thread-loader', 'babel-loader?cacheDirectory=true'],
         include: [config.resolve('src')],
       },
       {
@@ -42,16 +58,19 @@ module.exports = {
         options: {
           limit: 10240,
           name: 'images/[name].[hash:7].[ext]',
-        }
+        },
       },
       {
         test: /\.(woff2?|eot|ttf|otf)(\?.*)?$/,
         loader: 'url-loader',
         options: {
           limit: 10240,
-          name: 'fonts/[name].[hash:7].[ext]',
+          name: 'images/[name].[hash:7].[ext]',
         }
       },
     ],
   },
+  plugins: [
+    new VueLoaderPlugin(),
+  ],
 }

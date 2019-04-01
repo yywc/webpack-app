@@ -17,3 +17,7 @@
 ## 合并环境
 
 [合并开发环境与生产环境](https://github.com/yywc/webpack-vue/blob/master/doc/merge.md "合并开发环境与生产环境")
+
+## 优化打包
+
+[常见优化 webpack 的方法](https://github.com/yywc/webpack-vue/blob/master/doc/optimize.md "常见优化 webpack 的方法")

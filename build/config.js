@@ -18,7 +18,7 @@ const eslintRule = {
   }
 }
 
-const devtool = prod ? 'cheap-module-eval-source-map' : 'source-map';
+const devtool = prod ? 'cheap-module-eval-source-map' : 'cheap-module-source-map';
 
 module.exports = {
   prod,
