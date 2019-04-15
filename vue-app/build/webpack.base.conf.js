@@ -5,7 +5,7 @@ const resolve = dir => path.join(__dirname, '..', dir);
 
 module.exports = {
   entry: {
-    app: './src/main.js'
+    app: './src/main.js',
   },
   resolve: {
     extensions: ['.js', '.vue', '.json'], // 引入 js vue json 文件时可以不用写后缀名
@@ -24,6 +24,10 @@ module.exports = {
         test: /\.(js|vue)$/,
         loader: 'eslint-loader',
         enforce: 'pre',
+        options: {
+          formatter: require('eslint-friendly-formatter'),
+          emitWarning: true,
+        },
         include: [resolve('src')],
       },
       {
@@ -48,8 +52,8 @@ module.exports = {
         test: /\.(png|svg|jpg|gif)$/,
         loader: 'url-loader',
         options: {
-          limit: 102400
-        }
+          limit: 102400,
+        },
       },
       {
         test: /\.(woff2?|eot|ttf|otf)(\?.*)?$/,
@@ -57,4 +61,4 @@ module.exports = {
       },
     ],
   },
-}
+};

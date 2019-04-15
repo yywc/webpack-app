@@ -19,5 +19,5 @@ module.exports = merge(baseConfig, {
     new VueLoaderPlugin(),
     new FriendlyErrorsPlugin(),
     new webpack.HotModuleReplacementPlugin(),
-  ]
+  ],
 });
