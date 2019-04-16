@@ -4,13 +4,13 @@ import icon from '@/assets/images/icon.jpg';
 import bg from '@/assets/images/bg.jpg';
 
 let count = 1;
+const text = 'text';
 
 class HelloWorld extends Component {
   constructor(props) {
     super(props);
     this.state = {
       msg: '',
-      msg2: '444',
     };
   }
 
@@ -30,11 +30,11 @@ class HelloWorld extends Component {
   }
 
   render() {
-    const { msg, msg2 } = this.state;
+    const { msg } = this.state;
     return (
       <Fragment>
         <p>{msg}</p>
-        <p>{msg2}</p>
+        <p>{text}</p>
         <img
           src={icon}
           alt="icon"
