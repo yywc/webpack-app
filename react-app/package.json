@@ -15,8 +15,7 @@
     "react-dom": "^16.8.6",
     "react-router": "^5.0.0",
     "react-router-dom": "^5.0.0",
-    "typescript": "^3.4.3",
-    "react-hot-loader": "^4.8.4"
+    "typescript": "^3.4.3"
   },
   "devDependencies": {
     "@babel/core": "^7.4.3",

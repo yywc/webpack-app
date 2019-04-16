@@ -10,7 +10,7 @@ class HelloWorld extends Component {
     super(props);
     this.state = {
       msg: '',
-      msg2: '222',
+      msg2: '444',
     };
   }
 
