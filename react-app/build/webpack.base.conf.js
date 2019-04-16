@@ -8,7 +8,7 @@ module.exports = {
     app: './src/main.js',
   },
   resolve: {
-    extensions: ['.js', '.jsx', '.json'], // 引入 js vue json 文件时可以不用写后缀名
+    extensions: ['.js', '.jsx', '.json'], // 引入 js jsx json 文件时可以不用写后缀名
     alias: {
       '@': resolve('src'), // 配置 @ 指向 src
     },
@@ -26,7 +26,7 @@ module.exports = {
         include: [resolve('src')],
       },
       {
-        test: /\.js$/,
+        test: /\.(js|jsx)$/,
         loader: 'babel-loader',
         include: [resolve('src')],
       },
@@ -42,7 +42,7 @@ module.exports = {
         test: /\.(png|svg|jpg|gif)$/,
         loader: 'url-loader',
         options: {
-          limit: 102400,
+          limit: 10240,
         },
       },
       {
