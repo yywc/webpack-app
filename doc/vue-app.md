@@ -341,11 +341,13 @@ plugins: [
 ],
 ```
 
-同时在项目根目录下新建 .babelrc.js，内容如下：
+同时在项目根目录下新建 .babelrc，内容如下：
 
-```js
-module.exports = {
-  plugins: ['@babel/plugin-syntax-dynamic-import']
+```json
+{
+  "plugins": [
+    "@babel/plugin-syntax-dynamic-import"
+  ]
 }
 ```
 
@@ -410,27 +412,34 @@ module.exports = {
 npm i -D eslint babel-eslint eslint-config-airbnb-base eslint-plugin-import eslint-plugin-vue
 ```
 
-在根目录新建 .eslintrc.js 文件，打开。
+在根目录新建 .eslintrc 文件，打开。
 
-```js
-module.exports = {
-  root: true, // 设置为根目录，不会再向上寻找 eslint 配置文件
-  parserOptions: {
-    parser: 'babel-eslint', // 使用 babel-eslint 来解析
-    sourceType: 'module' // 代码是 module 模块则设置为 module
+```json
+{
+  "root": true,
+  "parserOptions": {
+    "parser": "babel-eslint",
+    "sourceType": "module"
   },
-  env: {
-    browser: true, // 设置浏览器环境
+  "env": {
+    "browser": true
   },
-  extends: [
-    'plugin:vue/essential', // vue 基本规则
-    'airbnb-base' // airbnb eslint 规则
+  "extends": [
+    "plugin:vue/essential",
+    "airbnb-base"
   ],
-  // vue 文件校验
-  plugins: ['vue'],
-  // 个性化规则
-  rules: {}
-};
+  "plugins": [
+    "vue"
+  ],
+  "settings": {
+    "import/resolver": {
+      "webpack": {
+        "config": "build/webpack.base.conf.js"
+      }
+    }
+  },
+  "rules": {}
+}
 ```
 
 但是现在我们去文件中，并没有发现 eslint 生效，原因是还缺少一个关键依赖：eslint-loader，有了这个才能在 vue、js 文件中启动 eslint 的校验， `npm i -D eslint-loader eslint-friendly-formatter` （eslint-friendly-formatter 使得 eslint 报错信息更加友好）。
