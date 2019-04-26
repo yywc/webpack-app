@@ -10,6 +10,7 @@ const baseWebpackConfig = require('./webpack.base.conf');
 
 module.exports = merge(baseWebpackConfig, {
   mode: 'production',
+  devtool: 'cheap-module-source-map', // 代码追踪
   output: {
     path: path.join(__dirname, '../dist'),
     filename: 'js/[name].[chunkhash].js',

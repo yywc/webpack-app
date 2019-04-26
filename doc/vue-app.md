@@ -186,6 +186,7 @@ const baseWebpackConfig = require('./webpack.base.conf');
 
 module.exports = merge(baseWebpackConfig, {
   mode: 'production', // 设置为开发环境模式，会自动帮我们启用一些打包优化。比如 js 的压缩
+  devtool: 'cheap-module-source-map', // 代码追踪
   output: {
     path: path.join(__dirname, '../dist'), // 输出到根目录下的 dist 文件
     filename: 'js/[name].[chunkhash].js', // 文件在 dist/js 目录下，文件名为：原文件名.chunkhash值.js
