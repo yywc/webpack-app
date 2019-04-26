@@ -388,8 +388,13 @@ const webpack = require('webpack');
 module.exports = {
   ..., // 其他属性
   devServer: {
-    hot: true,
-    clientLogLevel: 'warning', // 把控制台多余的打印消息去掉
+    hot: true, // 热更新
+    port: 8080,
+    open: true,
+    quiet: true, // 关闭 webpack-dev-server 的提示，用 friendly-error-plugin
+    overlay: true,
+    host: 'localhost',
+    clientLogLevel: 'warning', // 控制台提示信息级别是 warning 以上
   },
   plugins: [
     ..., // 其他插件
