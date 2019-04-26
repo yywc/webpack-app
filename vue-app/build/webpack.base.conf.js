@@ -39,6 +39,7 @@ module.exports = {
             loader: MiniCssExtractPlugin.loader,
           },
           'css-loader',
+          'postcss-loader',
         ],
       },
       {
@@ -49,6 +50,7 @@ module.exports = {
             loader: MiniCssExtractPlugin.loader,
           },
           'css-loader',
+          'postcss-loader',
           'stylus-loader',
         ],
       },

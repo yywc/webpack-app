@@ -3,11 +3,15 @@
     [
       "@babel/preset-env",
       {
-        "targets": {
-          "esmodules": true
+        "useBuiltIns": "usage",
+        "corejs": {
+          "version": 2,
+          "proposals": true
         }
       }
     ]
   ],
-  "plugins": ["@babel/plugin-syntax-dynamic-import"]
+  "plugins": [
+    "@babel/plugin-syntax-dynamic-import"
+  ]
 }

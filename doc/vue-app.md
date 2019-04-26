@@ -1,8 +1,8 @@
-# 1. 前言
+# 前言
 
 从上一篇开发环境的配置，大概也对这个配置过程有了一定的了解了，这一篇主要就是针对生产环境的一个配置，可以直接从开发环境的基础上进行一些改变。
 
-# 2. 准备工作
+## 2. 准备工作
 
 首先我们删除那么在开发环境需要用到的包，主要是以下：
 
@@ -20,24 +20,59 @@
 
 > "build": "webpack --progress --config build/webpack.prod.conf.js"
 
-新增 @babel/preset-env 包，它可以根据配置的目标浏览器或者运行环境来自动将 ES2015+ 的代码转换为 es5。
+新增依赖:
+
++ @babel/preset-env：转换 js 代码
++ @babel/polyfill：转换新的 api，例如 Promise、Map 等，注意要安装到生产依赖
++ postcss-loader：css 后处理器，配合 autoprefixer 给 css 添加浏览器厂商支持
++ autoprefixer：通过 browserslist 添加浏览器厂商前缀
 
 调整 .babelrc 文件：
 
 ```json
-+ "presets": [
-+   [
-+     "@babel/preset-env",
-+     {
-+       "targets": {
-+         "esmodules": true
-+       }
-+     }
-+   ]
-+ ],
+{
+  "presets": [
+    [
+      "@babel/preset-env",
+      {
+        "useBuiltIns": "usage", // 按需引入 @babel/polyfill 转换 api
+        "corejs": { // 解决打包时 webpack 报警告
+          "version": 2,
+          "proposals": true
+        }
+      }
+    ]
+  ],
+  "plugins": [
+    "@babel/plugin-syntax-dynamic-import"
+  ]
+}
 ```
 
-# 3. webpack.base.conf.js
+调整 package.json 文件，新增代码指定引擎和浏览器环境
+
+```json
+"engines": {
+  "node": ">= 8.0.0",
+  "npm": ">= 5.0.0"
+},
+"browserslist": [
+  "> 0.25%, not dead",
+  "not ie <= 8"
+]
+```
+
+新增 postcss.config.js 文件，添加 autoprefixer：
+
+```js
+module.exports = {
+  plugins: [
+    require('autoprefixer'),
+  ],
+};
+```
+
+## 3. webpack.base.conf.js
 
 针对开发环境，我们就不需要 eslint 来校验了，于是可以删除掉对 js、vue 文件的校验。
 
@@ -110,11 +145,11 @@ module.exports = {
       },
       {
         test: /\.css$/,
-        use: ['style-loader', 'css-loader'],
+        use: ['style-loader', 'css-loader', 'postcss-loader'],
       },
       {
         test: /\.styl(us)?$/,
-        use: ['style-loader', 'css-loader', 'stylus-loader'],
+        use: ['style-loader', 'css-loader', 'postcss-loader', 'stylus-loader'],
       },
       {
         test: /\.(png|svg|jpg|gif)$/,
@@ -137,7 +172,7 @@ module.exports = {
 }
 ```
 
-# 4. webpack.prod.conf.js
+## 4. webpack.prod.conf.js
 
 与开发环境差不多，我们依旧需要 merge 基本配置，html-webpack-plugin 与 vue-loader 的 plugin，同时指定一下输出目录。
 
@@ -172,7 +207,7 @@ module.exports = merge(baseWebpackConfig, {
 
 此时我们运行命令 `npm run build`，就可以看到根目录下多出一个 dist 文件，打包后的文件都在里面。这个 index.html 是需要服务才能启动的，我们利用 koa 起一个简单的服务器来看看打包后的效果。
 
-# 5. server.js
+## 5. server.js
 
 在文件根目录创建 server.js，然后安装 koa、koa-static 依赖，`npm i -D koa koa-static`。
 
@@ -215,7 +250,7 @@ app.listen(3030, (err) => {
 
 ```
 
-在控制台启动服务 `node server.js`，1秒后浏览器打开，发现缺少了一张图片，是我们在打包的时候没有将 /static 下的资源拷贝过来。找到原因后我们就通过 copy-webpack-plugin 来拷贝，`npm i -Dcopy-webpack-plugin`。
+在控制台启动服务 `node server.js`，1秒后浏览器打开，发现缺少了一张图片，是我们在打包的时候没有将 /static 下的资源拷贝过来。找到原因后我们就通过 copy-webpack-plugin 来拷贝，`npm i -D copy-webpack-plugin`。
 
 每次执行 `npm run build` 的时候我们需要手动去整理 /dist/ 目录，也不方便，安装一个 clean-webpack-plugin，让 webpack 帮我们来做这件事——`npm i -D clean-webpack-plugin`
 
@@ -235,7 +270,7 @@ plugin: [
 
 再执行打包命令，之后启动服务，我们缺失的图片回来了！而且整个项目也正常的跑起来了。
 
-# 6. css 提取与压缩
+## 6. css 提取与压缩
 
 上面的操作并没有涉及到 css 部分，如果我们需要将 css 代码提取出来，那么就需要用到 mini-css-extract-plugin (webpack4以下使用 extract-text-webpack-plugin) 与 optimize-css-assets-webpack-plugin 了。
 
