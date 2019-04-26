@@ -1,8 +1,8 @@
-# 1. 前言
+# 前言
 
 自从有了 vue-cli 就没有动手配置过 webpack 的一些配置，除了添加一些 loader 外。一键生成确实很方便，但同时我们也要知道 vue-cli 的作者在背后帮助我们做了哪些事情，这篇文章就是从零开始搭建一个 vue 的开发环境。
 
-# 2. 准备工作
+## 1. 准备工作
 
 webpack 配置前的一些准备工作，先想想我们需要哪些包，采用 stylus 预处理器。
 
@@ -43,9 +43,9 @@ npm i vue vue-router --save
 |-- index.html
 ```
 
-# 3. Vue 相关文件编写
+## 2. Vue 相关文件编写
 
-## 3.1 index.html
+### 2.1 index.html
 
 首先从最简单的 index.html 开始，通过 vscode 打开，输入 `! + tab`，自动生成一个 html 模板，只需要在里面添加一个 id 为 app 的 div 元素即可。
 
@@ -69,11 +69,11 @@ npm i vue vue-router --save
 </html>
 ```
 
-## 3.2 src 目录下文件编写
+### 2.2 src 目录下文件编写
 
 这部分也很简单，有过 vue 开发经验的同学都知道，所以就直接列出来好了。
 
-### 3.2.1 App.vue 文件
+#### 2.2.1 App.vue 文件
 
 ```html
 <template>
@@ -92,7 +92,7 @@ export default {
 </script>
 ```
 
-### 3.2.2 main.js 文件
+#### 2.2.2 main.js 文件
 
 ```js
 import Vue from 'vue';
@@ -110,7 +110,7 @@ new Vue({
 });
 ```
 
-### 3.2.3 components/HelloWorld.vue 文件
+#### 2.2.3 components/HelloWorld.vue 文件
 
 ```html
 <template>
@@ -156,7 +156,7 @@ p
 </style>
 ```
 
-### 3.2.4 router/index.js 文件
+#### 2.2.4 router/index.js 文件
 
 ```js
 import Vue from 'vue';
@@ -183,7 +183,7 @@ export default new Router({
 });
 ```
 
-### 3.2.5 assets/index.styl 文件
+#### 2.2.5 assets/index.styl 文件
 
 这是一个入口文件，需要引入其他的 stylus 文件给 main.js 统一引入。内容可以随便写，这里只是用来做一个效果展示。
 
@@ -203,7 +203,7 @@ export default new Router({
 
 这样一来 vue 相关的文件已经写好了，如果是 vue-cli 脚手架生成的话，直接 `npm run dev` 就可以跑起来看到效果了。我们要自己启动还需要一些 webpack 部分的编写。
 
-# 4. Webpack 部分
+## 3. Webpack 部分
 
 在此之前呢，我们先试试启动一下 webpack-dev-server。
 
@@ -217,7 +217,7 @@ export default new Router({
 
 紧接着再 `npm run dev` 一下，发现控制台还是会有红色报出，但是打开浏览器已经可以通过 localhost:8080 看到我们之前写的 index.html 页面了。但是问题来了，我们怎么把 vue 相关的显示到这里来呢？，那么就需要 webpack 配置文件上场了。
 
-## 4.1 webpack.base.conf.js
+### 3.1 webpack.base.conf.js
 
 这里是 webpack 基础配置的文件， webpack.dev.conf.js、webpack.prod.conf.js 来针对开发环境、生产环境做相应的配置，这里我们先只做开发环境的，但还是先这样区分开来。
 
@@ -298,7 +298,7 @@ npm i -D vue-loader babel-loader vue-style-loader url-loader
 npm i -D @babel/core
 ```
 
-## 4.2 webpack.dev.conf.js
+### 3.2 webpack.dev.conf.js
 
 这里是主要启动 webpack-der-server 的一些配置项了，首先需要从 base 里引入，我们需要一个 webpack-merge 来 merge 一下配置项。
 
@@ -333,6 +333,7 @@ npm i -D @babel/plugin-syntax-dynamic-import
 vue-loader 使用的时候，需要在 plugin 中添加一个插件。
 
 webpack.dev.conf.js 文件修改
+
 ```js
 const VueLoaderPlugin = require('vue-loader/lib/plugin');
 
@@ -345,9 +346,7 @@ plugins: [
 
 ```json
 {
-  "plugins": [
-    "@babel/plugin-syntax-dynamic-import"
-  ]
+  "plugins": ["@babel/plugin-syntax-dynamic-import"]
 }
 ```
 
@@ -372,11 +371,11 @@ plugins: [
 
 写到这，通过 `npm run dev`，我们的 vue 开发环境已经搭建起来了。
 
-# 5. 补充配置
+## 4. 补充配置
 
 虽然通过之前的配置，环境已经可以跑起来了，但是这样的开发体验并不是很好，下面我们就来进行一些优化。
 
-## 5.1 配置热更新
+### 4.1 配置热更新
 
 第一步就是配置热更新，不然我们每次修改代码都得重新 `npm run dev`，实在是太麻烦了。
 
@@ -400,7 +399,7 @@ module.exports = {
 
 保存文件，再次启动 dev，现在就可以热更新 vue 文件的改动了。
 
-## 5.2 配置 eslint
+### 4.2 配置 eslint
 
 代码规范是个很重要的事情，通过 eslint 来规范我们的代码结构可以避免很多潜在的错误，我们使用 airbnb 的风格。
 
@@ -412,37 +411,30 @@ module.exports = {
 npm i -D eslint babel-eslint eslint-config-airbnb-base eslint-plugin-import eslint-plugin-vue
 ```
 
-在根目录新建 .eslintrc 文件，打开。
+在根目录新建 .eslintrc.js 文件，打开。
 
-```json
-{
-  "root": true,
-  "parserOptions": {
-    "parser": "babel-eslint",
-    "sourceType": "module"
+```js
+module.exports = {
+  root: true, // 设置为根目录，不会再向上寻找 eslint 配置文件
+  parserOptions: {
+    parser: 'babel-eslint', // 使用 babel-eslint 来解析
+    sourceType: 'module' // 代码是 module 模块则设置为 module
   },
-  "env": {
-    "browser": true
+  env: {
+    browser: true, // 设置浏览器环境
   },
-  "extends": [
-    "plugin:vue/essential",
-    "airbnb-base"
+  extends: [
+    'plugin:vue/essential', // vue 基本规则
+    'airbnb-base' // airbnb eslint 规则
   ],
-  "plugins": [
-    "vue"
-  ],
-  "settings": {
-    "import/resolver": {
-      "webpack": {
-        "config": "build/webpack.base.conf.js"
-      }
-    }
-  },
-  "rules": {}
-}
+  // vue 文件校验
+  plugins: ['vue'],
+  // 个性化规则
+  rules: {}
+};
 ```
 
-但是现在我们去文件中，并没有发现 eslint 生效，原因是还缺少一个关键依赖：eslint-loader，有了这个才能在 vue、js 文件中启动 eslint 的校验， `npm i -D eslint-loader eslint-friendly-formatter` （eslint-friendly-formatter 使得 eslint 报错信息更加友好）。
+但是现在我们去文件中，并没有发现 eslint 生效，原因是还缺少一个关键依赖：eslint-loader，有了这个才能在 vue、js 文件中启动 eslint 的校验， `npm i -D eslint-loader`。
 
 打开 webpack.base.conf.js 文件，在 rules 中添加 eslint 的 loader。
 
@@ -454,10 +446,6 @@ webpack.base.conf.js
   test: /\.(js|vue)$/,
   loader: 'eslint-loader',
   enforce: 'pre',
-  options: {
-    formatter: require('eslint-friendly-formatter'),
-    emitWarning: true,
-  },
   include: [resolve('src')],
 },
 ```
@@ -484,7 +472,7 @@ settings: {
 
 到这里 eslint 的配置就完成了，如果有个性化的设置，在 .eslintrc.js 文件的 rules 中添加就行。
 
-## 5.3 配置报错信息
+### 4.3 配置报错信息
 
 不知道各位对每次 npm run dev 时控制台那么长一串作何感想，反正我觉得很冗杂。vue-cli 中提供了一个 friendly-errors-webpack-plugin 插件，这个插件会对报错信息更为直观友好地提示出来，我们也进行一下配置， `npm i -D friendly-errors-webpack-plugin`。
 
@@ -506,7 +494,7 @@ plugins: [
 
 再次跑一下项目，发现控制台是不是精简了很多呢。
 
-## 5.4 file loader
+### 4.4 file loader
 
 在上面的配置中我们使用了 url-loader 来处理字体和图片，url-loader 有个 limit 配置，当文件大小超过设定值时会采用 file-loader 来进行解析。
 
@@ -557,7 +545,7 @@ export default {
 
 第一张是 base64，第二张是静态资源，第三张就是我们通过 file-loader 解析的图片文件了。
 
-# 6. webpack-dev-server 简单解读
+## 5. webpack-dev-server 简单解读
 
 有些同学可能会有点疑问，webpack 配置不是四剑客——entry、output、module、plugins 吗？我们配置的开发环境怎么没有 output 的配置。这里不仅可以省略掉 output，连 entry 也可以省略。？？？，下面就简单分析一下。
 
@@ -568,15 +556,14 @@ export default {
 > webpack-dev-server 通过 express 启动一个本地服务器，与客户端通过 websocket 进行长连接，所以可以通过配置 hot 属性来实现原始文件改变，webpack-dev-server 实时编译刷新。
 
 这里有几点需要注意：
+
 + webpack-dev-server 是对资源文件进行编译加载，所以不会对 /index.html 的改变做出实时响应；
 + webpack-dev-server 默认会在当前工作目录(也就是 package.json 的目录)下找 src/index.js 文件作为 entry 的入口；
 + webpack-dev-server 生成的文件在内存中，所以看不到有输出，生成路径由 contentBase 指定，默认为当前工作目录；
 + webpack-dev-server 会在 contentBase 目录下寻找 index.html 作为首页；
 
 > 当我们在 devServer 中指定 contentBase: './dist' 时，那么 webpack-dev-server 就会去 dist 目录下寻找 index.html 以及其他资源文件了。
-
 > 我们可以 `npm run dev` 看看效果，跑起来后大部分都正常，除了找不到我们通过 /static/avatar.jpg 引入的图片，这样也可以解释，当未设置 contentBase 时，默认是根目录，而我们的 static 目录恰巧也是根目录，所以一切都是正常的。
-
 > 如果要解决这个问题，我们通过 copy-webpack-plugin 插件将资源拷贝过来，这里暂时就不做演示了，配置生产环境的时候会介绍，把这里这些操作先还原。
 
 不设置 entry 也可以正常运行的原因：在 webpack-dev-server 源码中找到 bin 目录下的 webpack-dev-server.js 文件，找到 startDevServer 方法，这里是主要启动服务，可以看到调用了一个 addEntries 方法。
