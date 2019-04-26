@@ -4,11 +4,11 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
-const baseWebpackConfig = require('./webpack.base.conf');
+const config = require('./webpack.base.conf');
 
-module.exports = merge(baseWebpackConfig, {
+module.exports = merge(config, {
   bail: true, // 出现错误立即停止打包
-  devtool: 'cheap-module-source-map',
+  devtool: 'cheap-module-source-map', // 代码追踪
   plugins: [
     new HtmlWebpackPlugin({
       template: 'index.html', // 本地模板的位置

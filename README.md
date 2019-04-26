@@ -6,6 +6,10 @@
 + 纯粹是做演示，所以页面非常难看，emmmm.... 不要老是去看页面。
 + 如果觉得有用点个 star 吧😊
 
+## Webpack4 一览
+
+![webpack4一览](https://github.com/yywc/webpack-vue/blob/master/doc/webpack4.png)
+
 ## Vue 开发/生产环境
 
 [Webpack4 配置 Vue 开发环境](https://github.com/yywc/webpack-app/blob/development/doc/vue-app.md "Webpack4 配置 Vue 开发环境")

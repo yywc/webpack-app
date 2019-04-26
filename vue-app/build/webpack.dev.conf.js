@@ -2,10 +2,10 @@ const webpack = require('webpack');
 const merge = require('webpack-merge');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const FriendlyErrorsPlugin = require('friendly-errors-webpack-plugin');
-const baseConfig = require('./webpack.base.conf');
+const config = require('./webpack.base.conf');
 
-module.exports = merge(baseConfig, {
-  devtool: 'cheap-module-eval-source-map',
+module.exports = merge(config, {
+  devtool: 'cheap-module-eval-source-map', // 代码追踪
   devServer: {
     hot: true, // 热更新
     port: 8080,
