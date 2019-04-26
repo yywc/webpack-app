@@ -15,7 +15,7 @@ const openDefaultBrowser = function (url) {
       type = `xdg-open ${[url]}`;
   }
   exec(type);
-}
+};
 
 const app = new Koa();
 
@@ -23,7 +23,7 @@ app.use(serve('./dist', { extensions: ['html'] }));
 
 app.listen(3030, (err) => {
   if (!err) {
-    console.log(`server listen 3030`);
+    console.log('server listen 3030');
     setTimeout(() => {
       openDefaultBrowser('http://localhost:3030');
     }, 1000);
