@@ -315,6 +315,7 @@ const baseConfig = require('./webpack.base.conf');
 
 module.exports = merge(baseConfig, {
   mode: 'development',
+  devtool: 'cheap-module-eval-source-map', // 代码追踪
   plugins: []
 });
 ```

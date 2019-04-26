@@ -7,6 +7,7 @@ const baseConfig = require('./webpack.base.conf');
 
 module.exports = merge(baseConfig, {
   mode: 'development',
+  devtool: 'cheap-module-eval-source-map', // 代码追踪
   devServer: {
     hot: true, // 热更新
     quiet: true, // 关闭 webpack-dev-server 的提示，用 friendly-error-plugin
