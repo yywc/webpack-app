@@ -12,11 +12,11 @@
 
 [Webpack4 配置 Vue 生产环境](https://github.com/yywc/webpack-app/blob/production/doc/vue-app.md "Webpack4 配置 Vue 生产环境")
 
-## React 开发/生产环境
+<!-- ## React 开发/生产环境
 
 [Webpack4 配置 React 开发环境](https://github.com/yywc/webpack-app/blob/development/doc/react-app.md "Webpack4 配置 React 开发环境")
 
-[Webpack4 配置 React 生产环境](https://github.com/yywc/webpack-app/blob/production/doc/react-app.md "Webpack4 配置 React 生产环境")
+[Webpack4 配置 React 生产环境](https://github.com/yywc/webpack-app/blob/production/doc/react-app.md "Webpack4 配置 React 生产环境") -->
 
 ## 合并环境
 
