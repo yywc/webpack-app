@@ -1,5 +1,32 @@
+const DllLinkPlugin = require('dll-link-webpack-plugin');
 const VueLoaderPlugin = require('vue-loader/lib/plugin');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const CleanWebpackPlugin = require('clean-webpack-plugin');
 const util = require('./util');
+
+// 初始化 thread-loader 的配置
+util.cache.init();
+
+// 由于 dll 打包，这两个插件要写在 base 里，所以根据环境来判断
+const alternativePlugin = () => (
+  util.IS_PROD
+    ? [
+      new CleanWebpackPlugin(),
+      new HtmlWebpackPlugin({
+        template: 'index.html',
+        minify: {
+          removeComments: true,
+          collapseWhitespace: true,
+          removeAttributeQuotes: true,
+        },
+      }),
+    ]
+    : [
+      new HtmlWebpackPlugin({
+        template: 'index.html',
+      }),
+    ]
+);
 
 module.exports = {
   mode: process.env.NODE_ENV,
@@ -23,22 +50,30 @@ module.exports = {
       ...util.eslint, // eslint 配置
       ...util.cssLoaders, // css loader 配置
       {
-        test: /\.vue$/,
-        loader: 'vue-loader',
-        options: {
-          cacheBusting: true,
-          transformToRequire: { // 将 template 里所有资源 url 转换为 webpack 模块请求
-            video: ['src', 'poster'],
-            source: 'src',
-            img: 'src',
-            image: 'xlink:href',
-          },
-        },
+        test: /\.js$/,
+        use: [
+          ...util.cache.getLoaders('cache-babel'), // cache-loader 与 thread-loader
+          'babel-loader?cacheDirectory',
+        ],
         include: util.resolve('src'),
       },
       {
-        test: /\.js$/,
-        loader: 'babel-loader',
+        test: /\.vue$/,
+        use: [
+          ...util.cache.getLoaders('cache-vue'), // cache-loader 与 thread-loader
+          {
+            loader: 'vue-loader',
+            options: {
+              cacheBusting: true,
+              transformToRequire: {
+                video: ['src', 'poster'],
+                source: 'src',
+                img: 'src',
+                image: 'xlink:href',
+              },
+            },
+          },
+        ],
         include: util.resolve('src'),
       },
       {
@@ -68,6 +103,11 @@ module.exports = {
     ],
   },
   plugins: [
+    ...alternativePlugin(),
+    new DllLinkPlugin({
+      htmlMode: true,
+      config: require('./webpack.dll.conf.js'),
+    }),
     new VueLoaderPlugin(),
   ],
   stats: {
