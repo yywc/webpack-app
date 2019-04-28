@@ -96,12 +96,6 @@ module.exports = {
 };
 ```
 
-### 1.3 SplitChunksPlugin
-
-SplitChunksPlugin 的前身是 CommonsChunkPlugin，是为了分割代码而存在的一个插件，可以根据我们的配置项，将代码分割成几个 chunk，从而减少首屏压力以及按需加载的 bundle 等问题。
-
-wrting...
-
 ## 2. webpack3
 
 上面针对的是 webpack4 的一些新特性以及仅 webpack4 支持的一些优化打包措施了，这里是 webpack3 的一些东西。
@@ -170,15 +164,13 @@ module.exports = {
 };
 ```
 
-### 2.3 CommonsChunkPlugin
+## 3. 代码分割
 
-wrting...
+### 3.1  神奇的 DllPlugin
 
-## 3. 神奇的 DllPlugin
+在初接触 webpack 的时候，随便打个包出来就是好几 MB 的，当时只会觉得有点大，但没想到这么~~~~大！，那么 DllPlugin 就可以帮助我们进行代码分割，将业务代码和库代码分离开。第一是可以减少 js 文件的体积，第二则可以提升用户体验，毕竟库代码不经常更新，可以长效缓存。
 
-在初接触 webpack 的时候，随便打个包出来就是好几 MB 的，当时只会觉得有点大，但没想到这么~~~~大！，那么 DllPlugin 就可以帮助我们进行代码分割，将业务代码和库代码分离开，第一是可以减少 js 文件的体积，第二则可以提升用户体验，毕竟库代码不经常更新，可以长效缓存。
-
-DllPlugin 要怎么使用呢？还需要配个一个 DllReferencePlugin 使用，这两个插件都是 webpack 自带，但是我们使用一个第三方库 dll-link-webpack-plugin 帮助我们更友好地使用。
+DllPlugin 要怎么使用呢？还需要配合一个 DllReferencePlugin 使用，这两个插件都是 webpack 自带，但是我们使用一个第三方库 dll-link-webpack-plugin 帮助我们更友好地使用。
 
 `npm install --save-dev dll-link-webpack-plugin`
 
@@ -234,3 +226,61 @@ module.exports = {
   ],
 };
 ```
+
+### 3.2 SplitChunksPlugin/CommonsChunkPlugin
+
+这两个插件前者是 webpack4 使用，后者则是 webpack3 服务的，作用都是一致——分离公有代码到其他 chunk 里。
+
+这里主要针对 SplitChunksPlugin 做一个简单介绍：
+
+```js
+// 以下配置都是默认值
+module.exports = {
+  optimization: {
+    splitChunks: {
+      chunks: 'async', // 可选 all，针对异步分割或者全部分割
+      minSize: 30000, // 低于 30kb 的文件不分割
+      maxSize: 0, // 分割前文件最大体积，0表示不限制
+      minChunks: 1, // 被引用次数
+      maxAsyncRequests: 5, // 最大异步加载次数
+      maxInitialRequests: 3, // 最大初始请求数
+      automaticNameDelimiter: '~', // 分割出的文件中间连接符
+      name: true, // 表示分割出的文件自动生成文件名
+      cacheGroups: { // 缓存组，可将多个 chunk 打包到一起，成一个 vendor 文件
+        vendors: { // 类似 webpack 的 entry 里的属性名，会生成一个 vendors~webpack.entry.filename 的一个文件名
+          test: /[\\/]node_modules[\\/]/, // 分割规则
+          priority: -10, // 优先级，在同时满足 cacheGroups 下所有的内容时，优先采用哪一个条件
+          filename: 'js/vendors.js', // 可设置项目，自定义文件名
+        },
+        default: { // 不符合 vendors 的 test 规则时
+          minChunks: 2, // 最小引用次数
+          priority: -20, // 优先级，-20 比 -10 要低，也就是在两者条件都满足下，会先采用 vendors 的分割规则
+          reuseExistingChunk: true, // 表示是否使用已有的 chunk，如果为 true 则表示如果当前的 chunk 包含的模块已经被抽取出去了，那么将不会重新生成新的。
+        },
+      },
+    },
+  },
+};
+```
+
+打包结果如图：
+
+![optimize](https://github.com/yywc/webpack-app/tree/master/doc/vue-app/optimize.png)
+
+### 3.3 两者的区别与选择
+
+可能很多同学也会有我一样的疑问，既然有这么两种代码分割，那么他们有什么区别，我又该选择哪一种呢？
+
+#### 区分？
+
+其实从写法上来说我们也能看出一些端倪
+
++ `SplitChunksPlugin、CommonsChunkPlugin` 是写在 webpack 配置项里的，也就是说每次打包都会帮助我们进行分割，生成新的文件
+
++ `DllPlugin、DllLinkWebpackPlugin` 是另起了一个配置文件，在库没有变化时并不会去处理这些文件
+
+这就导致了打包速度的差异，而且不经常变动的第三方库也能在浏览器中长效缓存下来，避免每次打包发布用户就会加载一遍我们的代码。
+
+#### 选择？
+
+以 vue 项目来说，用 DllPlugin 将全局使用的库文件打包到一个 vendors 里即可。至于某些模块异步加载的一些库则用 SplitChunksPlugin 分割，这样保证首页加载时 vendors 文件不至于太大，同时入口文件也会有一个按需加载避免加载过多暂时无用的代码。
