@@ -265,7 +265,7 @@ module.exports = {
 
 打包结果如图：
 
-![optimize](https://github.com/yywc/webpack-app/tree/master/doc/vue-app/optimize.png)
+![optimize](https://github.com/yywc/webpack-app/blob/master/doc/vue-app/optimize.png)
 
 ### 3.3 两者的区别与选择
 
