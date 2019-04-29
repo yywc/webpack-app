@@ -23,7 +23,6 @@ module.exports = merge(config, {
       {
         from: resolve('static'),
         to: resolve('dist/static'),
-        ignore: ['.*'],
       },
     ]),
     new MiniCssExtractPlugin({

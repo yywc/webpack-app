@@ -106,18 +106,48 @@ css 相关 loader 的作用以及顺序:
 #### 1.2.2 webpack.base.conf.js
 
 将 resolve 函数修改为 util.resolve，将一些需要根据环境的部分代码删除，添加我们新增的部分。
-将 VueLoaderPlugin 提取到此处，然后从 dev、prod 文件中删掉对应的部分。
+将 VueLoaderPlugin、mode 等提取到此处，然后从 dev、prod 文件中删掉对应的部分。
 
 ```js
+- const path = require('path');
+- const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 + const util = require('./util');
 + const VueLoaderPlugin = require('vue-loader/lib/plugin');
 
 module.exports = {
 +  mode: process.env.NODE_ENV, // 将 mode 移入到 base 文件，通过启动 webpack 时的环境变量自动设置
++  output: {
++    path: util.resolve('dist'),
++    filename: 'js/[name].[hash].js',
++    chunkFilename: 'js/[id].[chunkhash].js',
++  },
   module: {
     rules: [
 +      ...util.eslint, // eslint 配置
 +      ...util.cssLoaders, // css loader 配置
+-      {
+-        test: /\.css$/,
+-        use: [
+-          'style-loader',
+-          {
+-            loader: MiniCssExtractPlugin.loader,
+-          },
+-          'css-loader',
+-          'postcss-loader',
+-        ],
+-      },
+-      {
+-        test: /\.styl(us)?$/,
+-        use: [
+-          'style-loader',
+-          {
+-            loader: MiniCssExtractPlugin.loader,
+-          },
+-          'css-loader',
+-          'postcss-loader',
+-          'stylus-loader',
+-        ],
+-      },
 +      {
 +        test: /\.(mp4|webm|ogg|mp3|wav|flac|aac)(\?.*)?$/,
 +        loader: 'url-loader',
@@ -137,6 +167,375 @@ module.exports = {
 };
 ```
 
-#### 1.2.3 webpack.base.prod.js
+### 1.2.3 webpack.dev.conf.js
+
+移除 mode 以及 plugin 里的一些东西
+
+```js
+- const VueLoaderPlugin = require('vue-loader/lib/plugin');
+
+module.exports = merge(config, {
+-  mode: 'development',
+  plugins: [
+-    new VueLoaderPlugin(),
+  ],
+});
+```
+
+#### 1.2.4 webpack.prod.conf.js
 
 添加 `bail: true` 到配置文件，出现错误立即停止打包。
+
+然后修改一下 CopyWebpackPlugin 的复制路径
+
+```js
+- const VueLoaderPlugin = require('vue-loader/lib/plugin');
+- const path = require('path');
++ const { resolve } = require('./util');
+
+module.exports = merge(config, {
++   bail: true,
+-   mode: 'production',
+-   output: {
+-     path: path.join(__dirname, '../dist'),
+-     filename: 'js/[name].[chunkhash].js',
+-   },
+    new CopyWebpackPlugin([
+-     { from: 'static', to: 'static' },
++     {
++       from: resolve('static'),
++       to: resolve('dist/static'),
++    },
+    ]),
+-   new VueLoaderPlugin(),
+};
+```
+
+## 2. 优化
+
+在合并代码，解决冲突后，我们可以利用上 thread-loader、cache-loader 等优化工具了，这里要注意的是，loader 本身也会消耗性能，在实际项目中要根据项目大小以及实际打包结果来使用，切忌无脑上 loader 和 plugin 等操作。这里主要是做说明，所以都会使用到。
+
+### 2.1 thread-loader
+
+首先安装 thead-loader，`npm install --save-dev thread-loader`，然后打开 webpack.base.conf.js 文件，新增修改如下代码：
+
+```js
+const os = require('os);
+const threadLoader = require('thread-loader');
+
+threadLoader.warmup(
+  {
+    workers: os.cpus().length - 1, // 进程数， 默认值
+    workerParallelJobs: 50, // 子进程处理的最大事件数
+    workerNodeArgs: ['--max-old-space-size=1024'], // 传递给 node.js 的参数，默认值
+    poolRespawn: false, // 重启挂了的进程，默认值，生产环境可设置 true
+    poolTimeout: 500, // 响应时间，过期杀死进程，默认值
+    poolParallelJobs: 200, // 分配给子进程的最大事件数，值越小越低效，但是分配更均匀
+  },
+  ['babel-loader', 'vue-loader'], // 预加载耗时较大的 loader
+);
+
+module.exports = {
+  module: {
+    rules: [
+      {
+        test: /\.js$/,
+        use: [
+          'thread-loader',, // cache-loader 与 thread-loader
+          'babel-loader?cacheDirectory',
+        ],
+        include: util.resolve('src'),
+      },
+      {
+        test: /\.vue$/,
+        use: [
+          'thread-loader',, // cache-loader 与 thread-loader
+          {
+            loader: 'vue-loader',
+            // vue-loader 的一些配置，将模板里 url 资源都当成模块来打包
+            options: {
+              cacheBusting: true,
+              transformToRequire: {
+                video: ['src', 'poster'],
+                source: 'src',
+                img: 'src',
+                image: 'xlink:href',
+              },
+            },
+          },
+        ],
+        include: util.resolve('src'),
+      },
+    ],
+  },
+};
+```
+
+### 2.2 cache-loader
+
+cache-loader 主要的作用是将我们 loader 的处理缓存下来，帮助提升构建速度，使用也很简单，先 `npm install -save-dev cache-loader`。
+
+打开 webpack.base.conf.js，在上面 thread-loader 的基础上，我们再修改一些即可：
+
+```js
+module.exports = {
+  module: {
+    rules: [
+      {
+        test: /\.js$/,
+        use: [
++          {
++            loader: 'cache-loader',
++            options: {
++              cacheDirectory: resolve(`.cache/cache-babel`), // 缓存文件目录，由于会生成文件，所以要在 thread-loader 后执行
++            },
++          },
+          'thread-loader',, // cache-loader 与 thread-loader
+          'babel-loader?cacheDirectory',
+        ],
+        include: util.resolve('src'),
+      },
+      {
+        test: /\.vue$/,
+        use: [
++          {
++            loader: 'cache-loader',
++            options: {
++              cacheDirectory: resolve(`.cache/cache-vue`), // 缓存文件目录，由于会生成文件，所以要在 thread-loader 后执行
++            },
++          },
+          'thread-loader',, // cache-loader 与 thread-loader
+          {
+            loader: 'vue-loader',
+            // vue-loader 的一些配置，将模板里 url 资源都当成模块来打包
+            options: {
+              cacheBusting: true,
+              transformToRequire: {
+                video: ['src', 'poster'],
+                source: 'src',
+                img: 'src',
+                image: 'xlink:href',
+              },
+            },
+          },
+        ],
+        include: util.resolve('src'),
+      },
+    ],
+  },
+};
+```
+
+### 2.3 DllPlugin 打包第三方库
+
+普通打包下来，业务代码和第三方库打包在一起不仅导致 js 文件巨大，同时也让每次发版都会让用户更新不常更新的库代码，降低了缓存的利用率。所以通过 DllPlugin 来单独打包第三方的库，帮助我们在浏览器中长效缓存下来。
+
+新建 webpack.dll.conf.js，内容如下：
+
+```js
+const webpack = require('webpack');
+const { dependencies } = require('../package');
+const { resolve } = require('./util');
+
+const vendors = Object.keys(dependencies); // 从 package.json 里获取开发环境的依赖包
+const excludeVendors = ['@babel/polyfill']; // 不打包进 vendor 的依赖
+
+excludeVendors.forEach((dep) => {
+  const index = vendors.indexOf(dep);
+  if (index > -1) {
+    vendors.splice(index, 1); // 逐个移除不需要打包的依赖
+  }
+});
+
+module.exports = {
+  mode: process.env.NODE_ENV, // 根据 mode 进行打包
+  entry: {
+    vendor: vendors, // 需要打包的依赖和打包后名称
+  },
+  output: {
+    path: resolve('dist'),
+    filename: 'js/[name].[hash].js',
+    library: '[name]', // 通过 script 标签引用时需要
+  },
+  plugins: [
+    new webpack.DllPlugin({ // 调用 DllPlugin
+      path: resolve('dist/[name]-manifest'),
+      name: '[name]',
+    }),
+  ],
+};
+```
+
+然后在 webpack.base.conf.js 文件中引用，同时我们需要一个 DllLinkWebpackPlugin 来辅助，`npm install --save-dev dll-link-webpack-plugin`
+
+```js
++ const DllLinkPlugin = require('dll-link-webpack-plugin');
+
+module.exports = {
+  // ...
+  plugins: [
+    // ...
++    new DllLinkPlugin({
++      htmlMode: true,
++      config: require('./webpack.dll.conf.js'),
++    }),
+  ],
+};
+```
+
+由于我们在 base 里先生成了 dll 第三方库，在 prod 里执行 CleanWebpackPlugin 的时候会删除 dist 目录，所以我们要把 CleanWebpackPlugin 移到 base 里来，同时还有 HtmlWebpackPlugin。
+
+新增内容如下：
+
+```js
++ const HtmlWebpackPlugin = require('html-webpack-plugin');
++ const CleanWebpackPlugin = require('clean-webpack-plugin');
+
+// 由于 dll 打包，这两个插件要写在 base 里，所以根据环境来判断
++ const alternativePlugin = () => (
++   util.IS_PROD
++     ? [
++       new CleanWebpackPlugin(),
++       new HtmlWebpackPlugin({
++         template: 'index.html',
++         minify: {
++           removeComments: true,
++           collapseWhitespace: true,
++           removeAttributeQuotes: true,
++         },
++       }),
++     ]
++     : [
++       new HtmlWebpackPlugin({
++         template: 'index.html',
++       }),
++     ]
++ );
+
+module.exports = {
+  // ...
+  plugins: [
++    ...alternativePlugin(),
+    // ...
+  ],
+};
+```
+
+然后顺便也把 loader 部分也提取出来一下，主要是 cache-loader 和 thread-loader。
+
+util.js 文件中新增一个 cache 变量，然后导出：
+
+```js
+const os = require('os');
+const threadLoader = require('thread-loader');
+
+// 缓存配置，优化打包速度
+const cache = () => {
+  const init = () => {
+    // thread-loader 初始化设置
+    threadLoader.warmup(
+      {
+        workers: os.cpus().length - 1,
+        workerParallelJobs: 50,
+        workerNodeArgs: ['--max-old-space-size=1024'],
+        poolRespawn: false,
+        poolTimeout: 500,
+        poolParallelJobs: 200,
+      },
+      ['babel-loader', 'vue-loader'],
+    );
+  };
+  // cache-loader 配置
+  const getLoaders = dir => [
+    {
+      loader: 'cache-loader',
+      options: {
+        cacheDirectory: resolve(`.cache/${dir}`),
+      },
+    },
+    'thread-loader',
+  ];
+  return {
+    init,
+    getLoaders,
+  };
+};
+
+module.exports = {
+  //...
+  cache: cache(),
+};
+```
+
+然后在 webpack.base.conf.js 中替换原来的部分：
+
+```js
+- const os = require('os);
+- const threadLoader = require('thread-loader');
+
+- threadLoader.warmup(
+-   {
+-     workers: os.cpus().length - 1, // 进程数， 默认值
+-     workerParallelJobs: 50, // 子进程处理的最大事件数
+-     workerNodeArgs: ['--max-old-space-size=1024'], // 传递给 node.js 的参数，默认值
+-     poolRespawn: false, // 重启挂了的进程，默认值，生产环境可设置 true
+-     poolTimeout: 500, // 响应时间，过期杀死进程，默认值
+-     poolParallelJobs: 200, // 分配给子进程的最大事件数，值越小越低效，但是分配更均匀
+-   },
+-   ['babel-loader', 'vue-loader'], // 预加载耗时较大的 loader
+- );
+
++ // 初始化 thread-loader 的配置
++ util.cache.init();
+
+module.exports = {
+  module: {
+    rules: [
+      {
+        test: /\.js$/,
+        use: [
++          {
++            loader: 'cache-loader',
++            options: {
++              cacheDirectory: resolve(`.cache/cache-babel`), // 缓存文件目录，由于会生成文件，所以要在 thread-loader 后执行
++            },
++          },
+-          'thread-loader', // cache-loader 与 thread-loader
++          ...util.cache.getLoaders('cache-babel'), // cache-loader 与 thread-loader
+          'babel-loader?cacheDirectory',
+        ],
+        include: util.resolve('src'),
+      },
+      {
+        test: /\.vue$/,
+        use: [
++          {
++            loader: 'cache-loader',
++            options: {
++              cacheDirectory: resolve(`.cache/cache-vue`), // 缓存文件目录，由于会生成文件，所以要在 thread-loader 后执行
++            },
++          },
+-          'thread-loader', // cache-loader 与 thread-loader
++          ...util.cache.getLoaders('cache-vue'), // cache-loader 与 thread-loader
+          {
+            loader: 'vue-loader',
+            // vue-loader 的一些配置，将模板里 url 资源都当成模块来打包
+            options: {
+              cacheBusting: true,
+              transformToRequire: {
+                video: ['src', 'poster'],
+                source: 'src',
+                img: 'src',
+                image: 'xlink:href',
+              },
+            },
+          },
+        ],
+        include: util.resolve('src'),
+      },
+    ],
+  },
+};
+```
+
+最后这样就完成了一个 vue 项目从无到有的开发配置了，以后有更多的内容会继续补充。
