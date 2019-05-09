@@ -4,9 +4,6 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const util = require('./util');
 
-// 初始化 thread-loader 的配置
-util.cache.init();
-
 // 由于 dll 打包，这两个插件要写在 base 里，所以根据环境来判断
 const alternativePlugin = () => (
   util.IS_PROD
@@ -52,7 +49,7 @@ module.exports = {
       {
         test: /\.js$/,
         use: [
-          ...util.cache.getLoaders('cache-babel'), // cache-loader 与 thread-loader
+          ...util.optimizeLoaders('cache-babel', 'js'), // cache-loader 与 thread-loader
           'babel-loader?cacheDirectory',
         ],
         include: util.resolve('src'),
@@ -60,7 +57,7 @@ module.exports = {
       {
         test: /\.vue$/,
         use: [
-          ...util.cache.getLoaders('cache-vue'), // cache-loader 与 thread-loader
+          ...util.optimizeLoaders('cache-vue', 'vue'), // cache-loader 与 thread-loader
           {
             loader: 'vue-loader',
             options: {

@@ -1,6 +1,5 @@
 const os = require('os');
 const path = require('path');
-const threadLoader = require('thread-loader');
 // 引入抽取 css 的 loader
 const CssExtractLoader = require('mini-css-extract-plugin').loader;
 
@@ -61,41 +60,31 @@ const cssLoaders = () => {
 };
 
 // 缓存配置，优化打包速度
-const cache = () => {
-  const init = () => {
-    // thread-loader 初始化设置
-    threadLoader.warmup(
-      {
-        workers: os.cpus().length - 1,
-        workerParallelJobs: 50,
-        workerNodeArgs: ['--max-old-space-size=1024'],
-        poolRespawn: !!IS_PROD,
-        poolTimeout: 500,
-        poolParallelJobs: 200,
-      },
-      ['babel-loader', 'vue-loader'],
-    );
-  };
-  // cache-loader 配置
-  const getLoaders = dir => [
-    {
-      loader: 'cache-loader',
-      options: {
-        cacheDirectory: resolve(`.cache/${dir}`),
-      },
+const optimizeLoaders = (dir, name) => [
+  {
+    loader: 'cache-loader',
+    options: {
+      cacheDirectory: resolve(`.cache/${dir}`),
     },
-    'thread-loader',
-  ];
-  return {
-    init,
-    getLoaders,
-  };
-};
+  },
+  {
+    loader: 'thread-loader',
+    options: {
+      name,
+      workers: os.cpus().length - 1,
+      workerParallelJobs: 50,
+      workerNodeArgs: ['--max-old-space-size=1024'],
+      poolRespawn: !!IS_PROD,
+      poolTimeout: 2000,
+      poolParallelJobs: 50,
+    },
+  },
+];
 
 module.exports = {
   IS_PROD,
   resolve,
-  cache: cache(),
+  optimizeLoaders,
   eslint: getEslintRules(),
   cssLoaders: cssLoaders(),
 };
