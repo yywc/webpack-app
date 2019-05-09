@@ -69,7 +69,7 @@ const cache = () => {
         workers: os.cpus().length - 1,
         workerParallelJobs: 50,
         workerNodeArgs: ['--max-old-space-size=1024'],
-        poolRespawn: false,
+        poolRespawn: !!IS_PROD,
         poolTimeout: 500,
         poolParallelJobs: 200,
       },
