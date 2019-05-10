@@ -1,4 +1,3 @@
-const os = require('os');
 const path = require('path');
 // 引入抽取 css 的 loader
 const CssExtractLoader = require('mini-css-extract-plugin').loader;
@@ -60,7 +59,7 @@ const cssLoaders = () => {
 };
 
 // 缓存配置，优化打包速度
-const optimizeLoaders = (dir, name) => [
+const optimizeLoaders = dir => [
   {
     loader: 'cache-loader',
     options: {
@@ -70,8 +69,8 @@ const optimizeLoaders = (dir, name) => [
   {
     loader: 'thread-loader',
     options: {
-      name,
-      workers: os.cpus().length - 1,
+      name: dir,
+      workers: require('os').cpus().length - 1,
       workerParallelJobs: 50,
       workerNodeArgs: ['--max-old-space-size=1024'],
       poolRespawn: !!IS_PROD,

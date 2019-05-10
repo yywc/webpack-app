@@ -25,28 +25,24 @@ webpack 的打包的过程会随着项目的增大以及对库的不正确引用
 > npm install thread-loader --save-dev
 
 ```js
-const os = require('os);
-const threadLoader = require('thread-loader');
-
-threadLoader.warmup(
-  {
-    workers: os.cpus().length - 1, // 进程数， 默认值
-    workerParallelJobs: 50, // 子进程处理的最大事件数
-    workerNodeArgs: ['--max-old-space-size=1024'], // 传递给 node.js 的参数，默认值
-    poolRespawn: false, // 重启挂了的进程，默认值，生产环境可设置 true
-    poolTimeout: 500, // 响应时间，过期杀死进程，默认值
-    poolParallelJobs: 200, // 分配给子进程的最大事件数，值越小越低效，但是分配更均匀
-  },
-  ['babel-loader'], // 预加载耗时较大的 loader
-);
-
 module.exports = {
   module: {
     rules: [
       {
         test: /\.js$/,
         use: [
-          'thread-loader',
+          {
+            loader: 'thread-loader',
+            options: {
+              name: 'js', // 池(pool)的名称，可以修改name设置其他选项都一样的池
+              workers: require('os').cpus().length - 1, // 进程数， 默认值
+              workerParallelJobs: 50, // 子进程处理的最大事件数
+              workerNodeArgs: ['--max-old-space-size=1024'], // 传递给 node.js 的参数，默认值
+              poolRespawn: false, // 重启挂了的进程，默认值，生产环境可设置 true
+              poolTimeout: 500, // 响应时间，过期杀死进程，默认值
+              poolParallelJobs: 200, // 分配给子进程的最大事件数，值越小越低效，但是分配更均匀
+            },
+          },
           'babel-loader' // babel-loader 会运行在进程池中
         ],
       },
@@ -80,7 +76,18 @@ module.exports = {
 +              cacheDirectory: path.resolve(`.cache`), // 在当前目录下生成 .cache 目录，存放缓存记录
 +            },
 +          },
-          'thread-loader',
+          {
+            loader: 'thread-loader',
+            options: {
+              name: 'js', // 池(pool)的名称，可以修改name设置其他选项都一样的池
+              workers: require('os').cpus().length - 1, // 进程数， 默认值
+              workerParallelJobs: 50, // 子进程处理的最大事件数
+              workerNodeArgs: ['--max-old-space-size=1024'], // 传递给 node.js 的参数，默认值
+              poolRespawn: false, // 重启挂了的进程，默认值，生产环境可设置 true
+              poolTimeout: 500, // 响应时间，过期杀死进程，默认值
+              poolParallelJobs: 200, // 分配给子进程的最大事件数，值越小越低效，但是分配更均匀
+            },
+          },
 +          // 注意这里就不能写在 thread-loader 后面，因为 cache-loader 需要生成 cache 文件，运行在 thread-loader 中无法生成文件
 +          // {
 +          //   loader: 'cache-loader',

@@ -220,28 +220,24 @@ module.exports = merge(config, {
 首先安装 thead-loader，`npm install --save-dev thread-loader`，然后打开 webpack.base.conf.js 文件，新增修改如下代码：
 
 ```js
-const os = require('os);
-const threadLoader = require('thread-loader');
-
-threadLoader.warmup(
-  {
-    workers: os.cpus().length - 1, // 进程数， 默认值
-    workerParallelJobs: 50, // 子进程处理的最大事件数
-    workerNodeArgs: ['--max-old-space-size=1024'], // 传递给 node.js 的参数，默认值
-    poolRespawn: false, // 重启挂了的进程，默认值，生产环境可设置 true
-    poolTimeout: 500, // 响应时间，过期杀死进程，默认值
-    poolParallelJobs: 200, // 分配给子进程的最大事件数，值越小越低效，但是分配更均匀
-  },
-  ['babel-loader', 'vue-loader'], // 预加载耗时较大的 loader
-);
-
 module.exports = {
   module: {
     rules: [
       {
         test: /\.js$/,
         use: [
-          'thread-loader',, // cache-loader 与 thread-loader
+          {
+            loader: 'thread-loader',
+            options: {
+              name: 'cache-babel', // 池(pool)的名称，可以修改name设置其他选项都一样的池
+              workers: require('os').cpus().length - 1, // 进程数， 默认值
+              workerParallelJobs: 50, // 子进程处理的最大事件数
+              workerNodeArgs: ['--max-old-space-size=1024'], // 传递给 node.js 的参数，默认值
+              poolRespawn: false, // 重启挂了的进程，默认值，生产环境可设置 true
+              poolTimeout: 500, // 响应时间，过期杀死进程，默认值
+              poolParallelJobs: 200, // 分配给子进程的最大事件数，值越小越低效，但是分配更均匀
+            },
+          }, // thread-loader
           'babel-loader?cacheDirectory',
         ],
         include: util.resolve('src'),
@@ -249,7 +245,18 @@ module.exports = {
       {
         test: /\.vue$/,
         use: [
-          'thread-loader',, // cache-loader 与 thread-loader
+          {
+            loader: 'thread-loader',
+            options: {
+              name: 'cache-vue', // 池(pool)的名称，可以修改name设置其他选项都一样的池
+              workers: require('os').cpus().length - 1, // 进程数， 默认值
+              workerParallelJobs: 50, // 子进程处理的最大事件数
+              workerNodeArgs: ['--max-old-space-size=1024'], // 传递给 node.js 的参数，默认值
+              poolRespawn: false, // 重启挂了的进程，默认值，生产环境可设置 true
+              poolTimeout: 500, // 响应时间，过期杀死进程，默认值
+              poolParallelJobs: 200, // 分配给子进程的最大事件数，值越小越低效，但是分配更均匀
+            },
+          }, // thread-loader
           {
             loader: 'vue-loader',
             // vue-loader 的一些配置，将模板里 url 资源都当成模块来打包
@@ -289,8 +296,19 @@ module.exports = {
 +            options: {
 +              cacheDirectory: resolve(`.cache/cache-babel`), // 缓存文件目录，由于会生成文件，所以要在 thread-loader 后执行
 +            },
-+          },
-          'thread-loader',, // cache-loader 与 thread-loader
++          }, // cache-loader
+          {
+            loader: 'thread-loader',
+            options: {
+              name: 'cache-babel', // 池(pool)的名称，可以修改name设置其他选项都一样的池
+              workers: require('os').cpus().length - 1, // 进程数， 默认值
+              workerParallelJobs: 50, // 子进程处理的最大事件数
+              workerNodeArgs: ['--max-old-space-size=1024'], // 传递给 node.js 的参数，默认值
+              poolRespawn: false, // 重启挂了的进程，默认值，生产环境可设置 true
+              poolTimeout: 500, // 响应时间，过期杀死进程，默认值
+              poolParallelJobs: 200, // 分配给子进程的最大事件数，值越小越低效，但是分配更均匀
+            },
+          }, // thread-loader
           'babel-loader?cacheDirectory',
         ],
         include: util.resolve('src'),
@@ -303,8 +321,19 @@ module.exports = {
 +            options: {
 +              cacheDirectory: resolve(`.cache/cache-vue`), // 缓存文件目录，由于会生成文件，所以要在 thread-loader 后执行
 +            },
-+          },
-          'thread-loader',, // cache-loader 与 thread-loader
++          }, // cache-loader
+          {
+            loader: 'thread-loader',
+            options: {
+              name: 'cache-vue', // 池(pool)的名称，可以修改name设置其他选项都一样的池
+              workers: require('os').cpus().length - 1, // 进程数， 默认值
+              workerParallelJobs: 50, // 子进程处理的最大事件数
+              workerNodeArgs: ['--max-old-space-size=1024'], // 传递给 node.js 的参数，默认值
+              poolRespawn: false, // 重启挂了的进程，默认值，生产环境可设置 true
+              poolTimeout: 500, // 响应时间，过期杀死进程，默认值
+              poolParallelJobs: 200, // 分配给子进程的最大事件数，值越小越低效，但是分配更均匀
+            },
+          }, // thread-loader
           {
             loader: 'vue-loader',
             // vue-loader 的一些配置，将模板里 url 资源都当成模块来打包
@@ -423,71 +452,40 @@ module.exports = {
 
 然后顺便也把 loader 部分也提取出来一下，主要是 cache-loader 和 thread-loader。
 
-util.js 文件中新增一个 cache 变量，然后导出：
+util.js 文件中新增一个 optimizeLoaders 变量，然后导出：
 
 ```js
-const os = require('os');
-const threadLoader = require('thread-loader');
-
 // 缓存配置，优化打包速度
-const cache = () => {
-  const init = () => {
-    // thread-loader 初始化设置
-    threadLoader.warmup(
-      {
-        workers: os.cpus().length - 1,
-        workerParallelJobs: 50,
-        workerNodeArgs: ['--max-old-space-size=1024'],
-        poolRespawn: false,
-        poolTimeout: 500,
-        poolParallelJobs: 200,
-      },
-      ['babel-loader', 'vue-loader'],
-    );
-  };
-  // cache-loader 配置
-  const getLoaders = dir => [
-    {
-      loader: 'cache-loader',
-      options: {
-        cacheDirectory: resolve(`.cache/${dir}`),
-      },
+const optimizeLoaders = dir => [
+  {
+    loader: 'cache-loader',
+    options: {
+      cacheDirectory: resolve(`.cache/${dir}`),
     },
-    'thread-loader',
-  ];
-  return {
-    init,
-    getLoaders,
-  };
-};
+  },
+  {
+    loader: 'thread-loader',
+    options: {
+      name: dir,
+      workers: require('os').cpus().length - 1,
+      workerParallelJobs: 50,
+      workerNodeArgs: ['--max-old-space-size=1024'],
+      poolRespawn: !!IS_PROD,
+      poolTimeout: 2000,
+      poolParallelJobs: 50,
+    },
+  },
+];
 
 module.exports = {
   //...
-  cache: cache(),
+  optimizeLoaders,
 };
 ```
 
 然后在 webpack.base.conf.js 中替换原来的部分：
 
 ```js
-- const os = require('os);
-- const threadLoader = require('thread-loader');
-
-- threadLoader.warmup(
--   {
--     workers: os.cpus().length - 1, // 进程数， 默认值
--     workerParallelJobs: 50, // 子进程处理的最大事件数
--     workerNodeArgs: ['--max-old-space-size=1024'], // 传递给 node.js 的参数，默认值
--     poolRespawn: false, // 重启挂了的进程，默认值，生产环境可设置 true
--     poolTimeout: 500, // 响应时间，过期杀死进程，默认值
--     poolParallelJobs: 200, // 分配给子进程的最大事件数，值越小越低效，但是分配更均匀
--   },
--   ['babel-loader', 'vue-loader'], // 预加载耗时较大的 loader
-- );
-
-+ // 初始化 thread-loader 的配置
-+ util.cache.init();
-
 module.exports = {
   module: {
     rules: [
@@ -500,8 +498,19 @@ module.exports = {
 +              cacheDirectory: resolve(`.cache/cache-babel`), // 缓存文件目录，由于会生成文件，所以要在 thread-loader 后执行
 +            },
 +          },
--          'thread-loader', // cache-loader 与 thread-loader
-+          ...util.cache.getLoaders('cache-babel'), // cache-loader 与 thread-loader
+-          {
+-            loader: 'thread-loader',
+-            options: {
+-              name: 'cache-babel', // 池(pool)的名称，可以修改name设置其他选项都一样的池
+-              workers: require('os').cpus().length - 1, // 进程数， 默认值
+-              workerParallelJobs: 50, // 子进程处理的最大事件数
+-              workerNodeArgs: ['--max-old-space-size=1024'], // 传递给 node.js 的参数，默认值
+-              poolRespawn: false, // 重启挂了的进程，默认值，生产环境可设置 true
+-              poolTimeout: 500, // 响应时间，过期杀死进程，默认值
+-              poolParallelJobs: 200, // 分配给子进程的最大事件数，值越小越低效，但是分配更均匀
+-            },
+-          },
++          ...util.optimizeLoaders('cache-babel'), // cache-loader 与 thread-loader
           'babel-loader?cacheDirectory',
         ],
         include: util.resolve('src'),
@@ -515,8 +524,19 @@ module.exports = {
 +              cacheDirectory: resolve(`.cache/cache-vue`), // 缓存文件目录，由于会生成文件，所以要在 thread-loader 后执行
 +            },
 +          },
--          'thread-loader', // cache-loader 与 thread-loader
-+          ...util.cache.getLoaders('cache-vue'), // cache-loader 与 thread-loader
+-          {
+-            loader: 'thread-loader',
+-            options: {
+-              name: 'cache-vue', // 池(pool)的名称，可以修改name设置其他选项都一样的池
+-              workers: require('os').cpus().length - 1, // 进程数， 默认值
+-              workerParallelJobs: 50, // 子进程处理的最大事件数
+-              workerNodeArgs: ['--max-old-space-size=1024'], // 传递给 node.js 的参数，默认值
+-              poolRespawn: false, // 重启挂了的进程，默认值，生产环境可设置 true
+-              poolTimeout: 500, // 响应时间，过期杀死进程，默认值
+-              poolParallelJobs: 200, // 分配给子进程的最大事件数，值越小越低效，但是分配更均匀
+-            },
+-          },
++          ...util.optimizeLoaders('cache-vue'), // cache-loader 与 thread-loader
           {
             loader: 'vue-loader',
             // vue-loader 的一些配置，将模板里 url 资源都当成模块来打包
