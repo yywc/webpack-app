@@ -186,7 +186,7 @@ module.exports = merge(config, {
 
 添加 `bail: true` 到配置文件，出现错误立即停止打包。
 
-然后修改一下 CopyWebpackPlugin 的复制路径
+然后修改一下 CopyWebpackPlugin 的复制路径：
 
 ```js
 - const VueLoaderPlugin = require('vue-loader/lib/plugin');
@@ -412,9 +412,9 @@ module.exports = {
 };
 ```
 
-由于我们在 base 里先生成了 dll 第三方库，在 prod 里执行 CleanWebpackPlugin 的时候会删除 dist 目录，所以我们要把 CleanWebpackPlugin 移到 base 里来，同时还有 HtmlWebpackPlugin。
+由于我们在 base 里先生成了 dll 第三方库，在 prod 里执行 CleanWebpackPlugin 的时候会删除 dist 目录，所以我们要把 CleanWebpackPlugin 移到 base 里来，同时还有 HtmlWebpackPlugin，之后再修改 webpack.prod.conf.js。
 
-新增内容如下：
+webpack.base.conf.js 新增内容如下：
 
 ```js
 + const HtmlWebpackPlugin = require('html-webpack-plugin');
@@ -450,7 +450,53 @@ module.exports = {
 };
 ```
 
-然后顺便也把 loader 部分也提取出来一下，主要是 cache-loader 和 thread-loader。
+补充：这里我们添加 `speed-measure-webpack-plugin` 和 `webpack-bundle-analyzer` 包，通过 `npm run build-report` 命令启动分析型打包，build 则只打包，不进行相关分析，先在 `package.json` 中添加 build-report 命令：
+
+> "build-report": "npm run build -- --progress --color --report", // 这里的 report 只是我们定义的一个变量，与 webpack 无关
+
+webpack.prod.conf.js 修改成以下内容
+
+```js
+const merge = require('webpack-merge');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
+const { resolve } = require('./util');
+const config = require('./webpack.base.conf');
+
+const prodConfig = {
+  bail: true, // 出现错误立即停止打包
+  devtool: 'cheap-module-source-map', // 代码追踪
+  plugins: [
+    new CopyWebpackPlugin([
+      {
+        from: resolve('static'),
+        to: resolve('dist/static'),
+      },
+    ]),
+    new MiniCssExtractPlugin({
+      filename: 'css/[name].[contenthash].css',
+    }),
+    new OptimizeCSSAssetsPlugin(),
+  ],
+};
+
+let webpackConfig = merge(config, prodConfig); // 默认 build 时的 config
+
+// 用来在本地打包时分析，webpack-cli 启动时添加 --report 参数
+// 不用该形式 webpack 会报错，该参数只用来此处判断，并无 webpack 相关作用
+if (process.argv[process.argv.length - 1] === '--report') {
+  const SpeedMeasurePlugin = require('speed-measure-webpack-plugin'); // 打包速度分析
+  const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer'); // 打包体积分析
+  const smp = new SpeedMeasurePlugin();
+  prodConfig.plugins.push(new BundleAnalyzerPlugin()); // 会对 prodConfig 操作，不能提取出去
+  webpackConfig = smp.wrap(merge(config, prodConfig));
+}
+
+module.exports = webpackConfig;
+```
+
+顺便也把 loader 部分也提取出来一下，主要是 cache-loader 和 thread-loader。
 
 util.js 文件中新增一个 optimizeLoaders 变量，然后导出：
 
